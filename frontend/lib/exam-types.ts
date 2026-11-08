@@ -19,6 +19,7 @@ export type Topic = {
   name: string
   code?: string
   priority: TopicPriority
+  level?: number
   orderIndex?: number
   questionCount?: number
   children?: Topic[]
@@ -56,10 +57,11 @@ export type PracticeTest = {
   subjectId?: number
   topicId?: number
   durationMinutes: number
+  totalQuestions?: number
   totalMarks: number
   passingPercentage: number
   questionIds: number[]
-  status: 'draft' | 'published'
+  status?: 'draft' | 'published'
   createdAt: string
 }
 

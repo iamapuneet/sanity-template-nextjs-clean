@@ -131,6 +131,7 @@ export async function GET(req: NextRequest) {
       FROM assessment_attempts att
       JOIN students s ON att.student_id = s.id
       JOIN assessments asm ON att.assessment_id = asm.id
+      WHERE att.status = 'submitted'
       ORDER BY att.id DESC
       LIMIT 100
     `)
@@ -152,13 +153,87 @@ export async function GET(req: NextRequest) {
       LIMIT 10
     `)
 
+    // Aggregated Accuracy Breakdown (for Pie / Donut Chart)
+    const [[accuracyRow]]: any = await db.query(`
+      SELECT 
+        COALESCE(SUM(correct_answers), 0) as total_correct,
+        COALESCE(SUM(incorrect_answers), 0) as total_incorrect,
+        COALESCE(SUM(unanswered_questions), 0) as total_unanswered,
+        COALESCE(SUM(total_questions), 0) as total_questions_served
+      FROM assessment_attempts
+      WHERE status = 'submitted'
+    `)
+
+    // Speed Distribution (for Pie / Donut Chart: Fast vs Moderate vs Slow)
+    const [[speedRow]]: any = await db.query(`
+      SELECT 
+        COALESCE(SUM(CASE WHEN time_spent_seconds > 0 AND time_spent_seconds < 20 THEN 1 ELSE 0 END), 0) as fast_count,
+        COALESCE(SUM(CASE WHEN time_spent_seconds >= 20 AND time_spent_seconds <= 45 THEN 1 ELSE 0 END), 0) as moderate_count,
+        COALESCE(SUM(CASE WHEN time_spent_seconds > 45 THEN 1 ELSE 0 END), 0) as heavy_count,
+        COALESCE(AVG(time_spent_seconds), 0) as avg_time_per_question
+      FROM attempt_answers
+    `)
+
+    // Topic-wise Performance Bars
+    const [topicPerformance]: any = await db.query(`
+      SELECT 
+        top.name as topic_name,
+        sub.name as subject_name,
+        COUNT(aa.id) as total_attempts,
+        COALESCE(SUM(CASE WHEN aa.is_correct = 1 THEN 1 ELSE 0 END), 0) as correct_count,
+        ROUND((COALESCE(SUM(CASE WHEN aa.is_correct = 1 THEN 1 ELSE 0 END), 0) / COUNT(aa.id)) * 100) as accuracy_pct,
+        ROUND(AVG(aa.time_spent_seconds)) as avg_seconds
+      FROM attempt_answers aa
+      JOIN assessment_attempt_questions aaq ON aa.attempt_question_id = aaq.id
+      JOIN questions q ON aaq.question_id = q.id
+      JOIN topics top ON q.topic_id = top.id
+      JOIN subjects sub ON q.subject_id = sub.id
+      GROUP BY top.id
+      ORDER BY total_attempts DESC
+      LIMIT 8
+    `)
+
     return NextResponse.json({
       success: true,
       attempts,
       rankings,
+      analytics: {
+        accuracyBreakdown: {
+          correct: Number(accuracyRow?.total_correct || 0),
+          incorrect: Number(accuracyRow?.total_incorrect || 0),
+          unanswered: Number(accuracyRow?.total_unanswered || 0),
+          total: Number(accuracyRow?.total_questions_served || 0),
+        },
+        speedBreakdown: {
+          fast: Number(speedRow?.fast_count || 0),
+          moderate: Number(speedRow?.moderate_count || 0),
+          heavy: Number(speedRow?.heavy_count || 0),
+          avgSeconds: Math.round(Number(speedRow?.avg_time_per_question || 0)),
+        },
+        topicPerformance,
+      },
     })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const attemptId = searchParams.get('attempt_id')
+
+    if (!attemptId) {
+      return NextResponse.json({ success: false, error: 'Attempt ID is required' }, { status: 400 })
+    }
+
+    await db.query('DELETE FROM attempt_answers WHERE attempt_id = ?', [attemptId])
+    await db.query('DELETE FROM attempt_results WHERE attempt_id = ?', [attemptId])
+    await db.query('DELETE FROM assessment_attempt_questions WHERE attempt_id = ?', [attemptId])
+    await db.query('DELETE FROM assessment_attempts WHERE id = ?', [attemptId])
+
+    return NextResponse.json({ success: true, message: 'Attempt removed successfully' })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
