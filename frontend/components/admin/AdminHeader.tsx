@@ -6,79 +6,64 @@ import { Icons } from './Icons'
 
 interface AdminHeaderProps {
   onToggleMobile: () => void
-  title?: string
-  subtitle?: string
 }
 
-export default function AdminHeader({
-  onToggleMobile,
-  title = 'Dashboard',
-  subtitle = 'Government Exam Question Bank Management',
-}: AdminHeaderProps) {
+export default function AdminHeader({ onToggleMobile }: AdminHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 sm:px-6 flex items-center justify-between">
-      {/* Left section: mobile hamburger & breadcrumb */}
+    <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between shadow-2xs">
+      {/* Left section: mobile hamburger & breadcrumb badge */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onToggleMobile}
-          className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          className="lg:hidden p-2 rounded-xl text-gray-700 hover:text-black hover:bg-gray-100 transition-colors"
           aria-label="Open Navigation"
         >
           <Icons.Menu size={20} />
         </button>
 
-        <div className="flex flex-col">
-          <h1 className="text-lg font-semibold text-gray-900 leading-tight">
-            {title}
-          </h1>
-          <p className="text-xs text-gray-500 hidden sm:block">
-            {subtitle}
-          </p>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-black text-white flex items-center justify-center font-bold text-xs">
+            IA
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-black text-black leading-tight tracking-tight">
+              Rajasthan Informatics Assistant
+            </span>
+            <span className="text-[10px] text-gray-500 font-medium">
+              Administrative Control Console
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Right section: System state, quick buttons & profile */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      {/* Right section: System state, quick buttons & candidate link */}
+      <div className="flex items-center gap-3">
         {/* Status chip */}
-        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>System Active</span>
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-800 text-[11px] font-bold">
+          <span className="w-2 h-2 rounded-full bg-black"></span>
+          <span>Database Live</span>
         </div>
 
-        {/* Question Bank fast button */}
+        {/* Candidate Portal Quick Link */}
         <Link
-          href="/admin/questions?action=new"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-gray-800 text-white text-xs font-semibold transition-colors shadow-xs"
-        >
-          <Icons.Plus size={16} />
-          <span>New Question</span>
-        </Link>
-
-        {/* View Public / Studio link */}
-        <Link
-          href="/"
+          href="/practice"
           target="_blank"
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-xs font-medium border border-gray-200 transition-colors"
-          title="Open Public Portal"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-colors shadow-xs"
+          title="Open Student MCQ Practice Portal"
         >
-          <Icons.ExternalLink size={14} />
-          <span className="hidden md:inline">Public Site</span>
+          <Icons.CandidatePortal size={14} />
+          <span>Student Portal ↗</span>
         </Link>
 
-        {/* Notification indicator */}
-        <div className="relative">
-          <button
-            type="button"
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-            title="Notifications"
-          >
-            <Icons.Bell size={18} />
-          </button>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white"></span>
+        {/* Candidate Profile Pill */}
+        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-gray-100 border border-gray-200 text-xs">
+          <div className="w-5 h-5 rounded-full bg-black text-white font-bold flex items-center justify-center text-[10px]">
+            P
+          </div>
+          <span className="font-bold text-black text-[11px]">Puneet</span>
         </div>
       </div>
     </header>
   )
 }
-

@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react'
 import AdminSidebar from '@/components/admin/AdminSidebar'
+import AdminHeader from '@/components/admin/AdminHeader'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50/70 font-sans text-gray-900">
+    <div className="min-h-screen bg-gray-50/80 font-sans text-gray-900">
       <AdminSidebar
         collapsed={collapsed}
         setCollapsed={setCollapsed}
@@ -21,9 +22,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           collapsed ? 'lg:pl-20' : 'lg:pl-64'
         }`}
       >
-        <main className="flex-1 pb-16">{children}</main>
+        <AdminHeader onToggleMobile={() => setMobileOpen(true)} />
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl w-full mx-auto pb-16">
+          {children}
+        </main>
       </div>
     </div>
   )
 }
-

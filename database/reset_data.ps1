@@ -19,3 +19,4 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Host "Error executing reset script." -ForegroundColor Red
 }
+

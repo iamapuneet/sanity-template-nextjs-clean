@@ -113,17 +113,22 @@ export default function ExamsManagementPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      {/* Top Banner & Header */}
+      <div className="rounded-2xl bg-white border border-gray-200 p-6 md:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-black tracking-tight">Exam Management</h1>
-          <p className="text-sm text-gray-500">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-800 border border-gray-200 mb-2">
+            <span>Government Exam Platform</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black text-black tracking-tight">
+            Exam Management
+          </h1>
+          <p className="text-xs md:text-sm text-gray-500 mt-1 max-w-xl">
             Define recruitment exams and link syllabus subjects to them.
           </p>
         </div>
         <button
           onClick={handleOpenCreate}
-          className="px-4 py-2.5 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition-colors shadow-sm flex items-center gap-2 self-start sm:self-auto"
+          className="px-5 py-2.5 rounded-xl bg-black text-white font-semibold text-xs hover:bg-neutral-800 transition-colors shadow-sm flex items-center gap-2 self-start sm:self-auto shrink-0"
         >
           <Icons.Plus size={16} />
           Create Exam
@@ -134,7 +139,7 @@ export default function ExamsManagementPage() {
       {loading ? (
         <div className="py-16 text-center text-sm text-gray-400 font-medium">Loading exams...</div>
       ) : exams.length === 0 ? (
-        <div className="py-16 text-center text-sm text-gray-400 border border-dashed rounded-xl">
+        <div className="py-16 text-center text-sm text-gray-400 border border-dashed rounded-xl bg-white">
           No exams found. Click "Create Exam" to add one.
         </div>
       ) : (
@@ -164,7 +169,7 @@ export default function ExamsManagementPage() {
                   {exam.name}
                 </h3>
                 <p className="text-xs text-gray-600 line-clamp-2 mb-4">
-                  {exam.description || 'Rajasthan state government informatics assistant competitive exam.'}
+                  {exam.description || 'RSMSSB Informatics Assistant competitive exam.'}
                 </p>
               </div>
 
@@ -265,7 +270,7 @@ export default function ExamsManagementPage() {
                       <label
                         key={sub.id}
                         className={`flex items-center justify-between p-2 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-                          checked ? 'bg-white border border-black text-black' : 'hover:bg-gray-100 text-gray-700'
+                          checked ? 'bg-white border border-black text-black font-bold' : 'hover:bg-gray-100 text-gray-700'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -273,7 +278,7 @@ export default function ExamsManagementPage() {
                             type="checkbox"
                             checked={checked}
                             onChange={() => toggleSubjectSelect(sub.id)}
-                            className="rounded accent-black"
+                            className="rounded accent-black w-4 h-4"
                           />
                           <span>{sub.name}</span>
                         </div>
@@ -306,4 +311,3 @@ export default function ExamsManagementPage() {
     </div>
   )
 }
-
