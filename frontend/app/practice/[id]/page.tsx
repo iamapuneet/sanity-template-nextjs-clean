@@ -898,122 +898,132 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Right Column: Question Palette (Ultra Clean & Compact) */}
-        <div className="lg:col-span-1 rounded-3xl bg-white border border-gray-200 p-5 shadow-xs space-y-4 lg:sticky lg:top-20">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-            <div>
-              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-gray-400 block">
-                Overview
+        {/* Right Column: Question Palette (Ultra Clean & Compact, Expandable/Collapsible) */}
+        {paletteOpen && (
+          <div className="lg:col-span-1 rounded-3xl bg-white border border-gray-200 p-5 shadow-xs space-y-4 lg:sticky lg:top-20 animate-in fade-in duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-gray-400 block">
+                  Overview
+                </span>
+                <h2 className="text-sm font-black text-black tracking-tight">
+                  Question Palette
+                </h2>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-black text-white">
+                  {answeredCount}/{questions.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPaletteOpen(false)}
+                  title="Collapse Palette"
+                  className="p-1 rounded-lg text-gray-400 hover:text-black hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <Icons.Close size={15} />
+                </button>
+              </div>
+            </div>
+
+            {/* Completion Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px] font-semibold text-gray-600">
+                <span>Completion Rate</span>
+                <span className="font-mono text-black font-bold">
+                  {Math.round((answeredCount / (questions.length || 1)) * 100)}%
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className="h-full bg-black transition-all duration-300 rounded-full"
+                  style={{ width: `${(answeredCount / (questions.length || 1)) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Compact 3-Column Stats Counter */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                <div className="font-mono font-black text-black text-sm">{answeredCount}</div>
+                <div className="text-[9px] uppercase font-bold text-gray-500">Answered</div>
+              </div>
+              <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                <div className="font-mono font-black text-black text-sm">{reviewCount}</div>
+                <div className="text-[9px] uppercase font-bold text-gray-500">Review</div>
+              </div>
+              <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                <div className="font-mono font-black text-black text-sm">{unansweredCount}</div>
+                <div className="text-[9px] uppercase font-bold text-gray-500">Skipped</div>
+              </div>
+            </div>
+
+            {/* Quick Legend Pills */}
+            <div className="flex items-center justify-between text-[10px] text-gray-500 px-1 pt-0.5">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-sm bg-black inline-block"></span>
+                <span>Answered</span>
               </span>
-              <h2 className="text-sm font-black text-black tracking-tight">
-                Question Palette
-              </h2>
-            </div>
-            <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-black text-white">
-              {answeredCount}/{questions.length}
-            </span>
-          </div>
-
-          {/* Completion Progress Bar */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-[11px] font-semibold text-gray-600">
-              <span>Completion Rate</span>
-              <span className="font-mono text-black font-bold">
-                {Math.round((answeredCount / (questions.length || 1)) * 100)}%
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-sm border border-black bg-white inline-block"></span>
+                <span>Review</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-sm bg-gray-200 inline-block"></span>
+                <span>Unvisited</span>
               </span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
-              <div
-                className="h-full bg-black transition-all duration-300 rounded-full"
-                style={{ width: `${(answeredCount / (questions.length || 1)) * 100}%` }}
-              />
+
+            {/* Numbered Palette Grid (Pixel-Perfect, No Ring Artifacts) */}
+            <div className="pt-2">
+              <div className="grid grid-cols-5 gap-2">
+                {questions.map((q, idx) => {
+                  const isCurrent = idx === currentIndex
+                  const status = questionStatuses[q.question_id]
+                  const isAnswered = status === 'answered'
+                  const isReview = status === 'marked_for_review'
+
+                  let style = 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                  if (isAnswered) {
+                    style = 'bg-black text-white font-bold border border-black shadow-xs'
+                  } else if (isReview) {
+                    style = 'bg-white text-black font-bold border-2 border-black'
+                  }
+
+                  return (
+                    <button
+                      key={q.question_id}
+                      type="button"
+                      onClick={() => goToQuestion(idx)}
+                      className={`h-9 w-full rounded-xl font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${style} ${
+                        isCurrent
+                          ? 'border-2 border-black font-black scale-105 shadow-sm'
+                          : ''
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Bottom Submit CTA Button (No awkward empty space) */}
+            <div className="pt-3 border-t border-gray-100 space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowSubmitModal(true)}
+                className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              >
+                <span>Submit Entire Assessment</span>
+                <Icons.ChevronRight size={14} />
+              </button>
+              <p className="text-[10px] text-center text-gray-400 font-mono">
+                Live Auto-Save Enabled
+              </p>
             </div>
           </div>
-
-          {/* Compact 3-Column Stats Counter */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
-              <div className="font-mono font-black text-black text-sm">{answeredCount}</div>
-              <div className="text-[9px] uppercase font-bold text-gray-500">Answered</div>
-            </div>
-            <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
-              <div className="font-mono font-black text-black text-sm">{reviewCount}</div>
-              <div className="text-[9px] uppercase font-bold text-gray-500">Review</div>
-            </div>
-            <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
-              <div className="font-mono font-black text-black text-sm">{unansweredCount}</div>
-              <div className="text-[9px] uppercase font-bold text-gray-500">Skipped</div>
-            </div>
-          </div>
-
-          {/* Quick Legend Pills */}
-          <div className="flex items-center justify-between text-[10px] text-gray-500 px-1 pt-0.5">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-sm bg-black inline-block"></span>
-              <span>Answered</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-sm border border-black bg-white inline-block"></span>
-              <span>Review</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-sm bg-gray-200 inline-block"></span>
-              <span>Unvisited</span>
-            </span>
-          </div>
-
-          {/* Numbered Palette Grid (Pixel-Perfect, No Ring Artifacts) */}
-          <div className="pt-2">
-            <div className="grid grid-cols-5 gap-2">
-              {questions.map((q, idx) => {
-                const isCurrent = idx === currentIndex
-                const status = questionStatuses[q.question_id]
-                const isAnswered = status === 'answered'
-                const isReview = status === 'marked_for_review'
-
-                let style = 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
-                if (isAnswered) {
-                  style = 'bg-black text-white font-bold border border-black shadow-xs'
-                } else if (isReview) {
-                  style = 'bg-white text-black font-bold border-2 border-black'
-                }
-
-                return (
-                  <button
-                    key={q.question_id}
-                    type="button"
-                    onClick={() => goToQuestion(idx)}
-                    className={`h-9 w-full rounded-xl font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${style} ${
-                      isCurrent
-                        ? isAnswered
-                          ? 'ring-2 ring-black ring-offset-2'
-                          : 'border-2 border-black bg-neutral-100 text-black shadow-xs'
-                        : ''
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Bottom Submit CTA Button (No awkward empty space) */}
-          <div className="pt-3 border-t border-gray-100 space-y-2">
-            <button
-              type="button"
-              onClick={() => setShowSubmitModal(true)}
-              className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-            >
-              <span>Submit Entire Assessment</span>
-              <Icons.ChevronRight size={14} />
-            </button>
-            <p className="text-[10px] text-center text-gray-400 font-mono">
-              Live Auto-Save Enabled
-            </p>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------- */}

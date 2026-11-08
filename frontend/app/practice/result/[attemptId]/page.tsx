@@ -286,61 +286,114 @@ export default function ExamResultPage({ params }: { params: Promise<{ attemptId
                     {ans.question_text}
                   </h4>
 
-                  {/* Options */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Options List (Styled exactly as per reference design) */}
+                  <div className="space-y-3 pt-1">
                     {ans.options?.map((opt: any) => {
                       const isSelectedByStudent = ans.selected_option_key === opt.key
                       const isOptionCorrect = Boolean(opt.isCorrect)
 
-                      let optStyle = 'border-gray-200 bg-white text-gray-700'
+                      // 1. Correct Option (Green Card)
                       if (isOptionCorrect) {
-                        optStyle = 'border-black bg-neutral-100 text-black font-bold ring-1 ring-black'
-                      } else if (isSelectedByStudent && !isOptionCorrect) {
-                        optStyle = 'border-gray-400 bg-gray-50 text-gray-900 line-through'
+                        return (
+                          <div
+                            key={opt.key}
+                            className="rounded-2xl border-2 border-emerald-500 bg-emerald-50/70 overflow-hidden shadow-xs border-l-6 border-l-emerald-600 transition-all"
+                          >
+                            {/* Option Header */}
+                            <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <span className="w-7 h-7 rounded-full border-2 border-emerald-700 bg-emerald-100 text-emerald-950 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                                  {opt.key}
+                                </span>
+                                <span className="text-sm font-bold text-emerald-950">
+                                  {opt.text}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {isSelectedByStudent && (
+                                  <span className="text-[10px] font-bold uppercase text-emerald-800 tracking-wider hidden sm:inline">
+                                    YOUR ANSWER
+                                  </span>
+                                )}
+                                <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-200/80 text-emerald-950 border border-emerald-400 flex items-center gap-1 shadow-2xs">
+                                  <span>✓ CORRECT</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Detailed Explanation Compartment beneath divider */}
+                            {ans.explanation && (
+                              <div className="px-4 py-3 bg-white/80 border-t border-emerald-200 text-xs text-emerald-950 leading-relaxed font-medium">
+                                <span className="font-bold text-emerald-900 block mb-0.5 text-[11px] uppercase tracking-wider">
+                                  Correct Explanation (सही उत्तर का स्पष्टीकरण):
+                                </span>
+                                <p>{ans.explanation}</p>
+                              </div>
+                            )}
+                          </div>
+                        )
                       }
 
+                      // 2. Selected but Incorrect Option (Red Card)
+                      if (isSelectedByStudent && !isOptionCorrect) {
+                        return (
+                          <div
+                            key={opt.key}
+                            className="rounded-2xl border-2 border-rose-500 bg-rose-50/70 overflow-hidden shadow-xs border-l-6 border-l-rose-600 transition-all"
+                          >
+                            {/* Option Header */}
+                            <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <span className="w-7 h-7 rounded-full border-2 border-rose-700 bg-rose-100 text-rose-950 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                                  {opt.key}
+                                </span>
+                                <span className="text-sm font-bold text-rose-950">
+                                  {opt.text}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider hidden sm:inline">
+                                  YOUR ANSWER
+                                </span>
+                                <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-200/80 text-rose-950 border border-rose-400 flex items-center gap-1 shadow-2xs">
+                                  <span>✕ INCORRECT</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Detailed Explanation Compartment beneath divider */}
+                            <div className="px-4 py-3 bg-white/80 border-t border-rose-200 text-xs text-rose-950 leading-relaxed font-medium">
+                              <span className="font-bold text-rose-900 block mb-0.5 text-[11px] uppercase tracking-wider">
+                                Incorrect Selection (गलत विकल्प):
+                              </span>
+                              <p>
+                                आपने विकल्प ({opt.key}) चुना, जबकि सही उत्तर विकल्प ({ans.correct_option_key}) है।
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      }
+
+                      // 3. Neutral Unselected Option
                       return (
                         <div
                           key={opt.key}
-                          className={`p-3 rounded-xl border text-xs flex items-center justify-between ${optStyle}`}
+                          className="rounded-2xl border border-gray-200 bg-white overflow-hidden text-xs text-gray-700 border-l-4 border-l-gray-300"
                         >
-                          <div className="flex items-center gap-2.5">
-                            <span
-                              className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] ${
-                                isOptionCorrect ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {opt.key}
-                            </span>
-                            <span>{opt.text}</span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase">
-                            {isOptionCorrect && (
-                              <span className="px-1.5 py-0.2 rounded bg-black text-white">
-                                Correct Answer
+                          <div className="p-3.5 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <span className="w-7 h-7 rounded-full border border-gray-300 bg-gray-100 text-gray-700 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                                {opt.key}
                               </span>
-                            )}
-                            {isSelectedByStudent && (
-                              <span className="px-1.5 py-0.2 rounded bg-gray-200 text-gray-800">
-                                Your Choice
-                              </span>
-                            )}
+                              <span className="font-semibold text-gray-800 text-sm">{opt.text}</span>
+                            </div>
                           </div>
                         </div>
                       )
                     })}
                   </div>
-
-                  {/* Explanation Block */}
-                  {ans.explanation && (
-                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 space-y-1">
-                      <span className="font-bold text-black uppercase text-[10px] block">
-                        Detailed Explanation / व्याख्या:
-                      </span>
-                      <p className="leading-relaxed">{ans.explanation}</p>
-                    </div>
-                  )}
                 </div>
               )
             })}
