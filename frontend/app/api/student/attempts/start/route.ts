@@ -10,6 +10,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Assessment ID is required' }, { status: 400 })
     }
 
+    // Validate student existence and active status
+    const [[student]]: any = await db.query(
+      `SELECT id, full_name, status FROM students WHERE id = ?`,
+      [student_id]
+    )
+
+    if (!student || student.status !== 'active') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Valid candidate session required to start exam' },
+        { status: 403 }
+      )
+    }
+
     const [[assessment]]: any = await db.query(
       `SELECT id, total_questions, total_marks, duration_minutes FROM assessments WHERE id = ?`,
       [assessment_id]

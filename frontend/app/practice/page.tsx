@@ -24,7 +24,25 @@ export default function StudentPracticePortalPage() {
       if (resTests.success) setAssessments(resTests.assessments)
       if (resStudents.success && resStudents.students.length > 0) {
         setStudents(resStudents.students)
-        setCurrentStudent(resStudents.students[0])
+        const savedStudent = typeof window !== 'undefined' ? localStorage.getItem('examforge_current_student') : null
+        if (savedStudent) {
+          try {
+            const parsed = JSON.parse(savedStudent)
+            const matched = resStudents.students.find((s: any) => s.id === parsed.id)
+            if (matched) {
+              setCurrentStudent(matched)
+            } else {
+              setCurrentStudent(resStudents.students[0])
+              localStorage.setItem('examforge_current_student', JSON.stringify(resStudents.students[0]))
+            }
+          } catch {
+            setCurrentStudent(resStudents.students[0])
+            localStorage.setItem('examforge_current_student', JSON.stringify(resStudents.students[0]))
+          }
+        } else {
+          setCurrentStudent(resStudents.students[0])
+          localStorage.setItem('examforge_current_student', JSON.stringify(resStudents.students[0]))
+        }
       }
     } catch (err) {
       console.error(err)
@@ -50,6 +68,9 @@ export default function StudentPracticePortalPage() {
       const json = await res.json()
       if (json.success) {
         setCurrentStudent(json.student)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('examforge_current_student', JSON.stringify(json.student))
+        }
         setShowSwitchModal(false)
         setNewStudentName('')
         loadData()
@@ -200,7 +221,12 @@ export default function StudentPracticePortalPage() {
                     </div>
 
                     <Link
-                      href={`/practice/${test.id}?student_id=${currentStudent?.id || 1}`}
+                      href={`/practice/${test.id}`}
+                      onClick={() => {
+                        if (currentStudent && typeof window !== 'undefined') {
+                          localStorage.setItem('examforge_current_student', JSON.stringify(currentStudent))
+                        }
+                      }}
                       className="w-full py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs"
                     >
                       <span>Start Practice Test</span>
@@ -238,6 +264,9 @@ export default function StudentPracticePortalPage() {
                   key={st.id}
                   onClick={() => {
                     setCurrentStudent(st)
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('examforge_current_student', JSON.stringify(st))
+                    }
                     setShowSwitchModal(false)
                   }}
                   className={`w-full p-2.5 rounded-xl text-xs text-left font-semibold flex items-center justify-between transition-colors ${
