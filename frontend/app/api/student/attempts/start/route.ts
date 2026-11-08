@@ -12,11 +12,11 @@ export async function POST(req: NextRequest) {
 
     // Validate student existence and active status
     const [[student]]: any = await db.query(
-      `SELECT id, full_name, status FROM students WHERE id = ?`,
+      `SELECT id, full_name, account_status FROM students WHERE id = ?`,
       [student_id]
     )
 
-    if (!student || student.status !== 'active') {
+    if (!student || student.account_status !== 'active') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized: Valid candidate session required to start exam' },
         { status: 403 }
