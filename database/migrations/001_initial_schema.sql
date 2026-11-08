@@ -1,13 +1,28 @@
 -- ExamForge Database Schema
--- MySQL 8.0+
+-- Compatible with MySQL 5.5+ and 8.0+
 -- Engine: InnoDB
--- Charset: utf8mb4
+-- Charset: utf8
 
 CREATE DATABASE IF NOT EXISTS examforge
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+    CHARACTER SET utf8
+    COLLATE utf8_general_ci;
 
 USE examforge;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS
+    student_bookmarks, student_question_reports,
+    student_subject_performance, student_topic_performance, student_daily_stats,
+    attempt_results, attempt_events, attempt_question_reviews, attempt_answer_options, attempt_answers,
+    assessment_attempt_questions, assessment_attempts,
+    assessment_questions, assessment_sections, assessments,
+    question_revisions, question_media, question_tag_map, question_tags, question_options, questions,
+    topics, exam_subjects, subjects, exams,
+    student_activity_logs, student_preferences, student_sessions, student_credentials, students,
+    admin_activity_logs, admin_role_map, admin_users, roles;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================
 -- 1. EXAMS
@@ -20,8 +35,8 @@ CREATE TABLE exams (
     description TEXT,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    updated_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 2. SUBJECTS
@@ -35,8 +50,8 @@ CREATE TABLE subjects (
     icon VARCHAR(100) DEFAULT 'book',
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    updated_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE exam_subjects (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -47,7 +62,7 @@ CREATE TABLE exam_subjects (
     UNIQUE KEY uq_exam_subject (exam_id, subject_id),
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 3. TOPICS AND SUBTOPICS
@@ -66,13 +81,13 @@ CREATE TABLE topics (
     order_index INT DEFAULT 0,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL,
     UNIQUE KEY uq_subject_slug (subject_id, slug),
     INDEX idx_subject_parent (subject_id, parent_id),
     INDEX idx_topic_priority (priority),
     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES topics(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 4. QUESTION BANK
@@ -98,12 +113,12 @@ CREATE TABLE questions (
     reviewed_by BIGINT UNSIGNED NULL,
     reviewed_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL,
     INDEX idx_question_filter (subject_id, topic_id, difficulty, status),
     INDEX idx_question_type (question_type),
     FOREIGN KEY (subject_id) REFERENCES subjects(id),
     FOREIGN KEY (topic_id) REFERENCES topics(id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE question_options (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -116,13 +131,13 @@ CREATE TABLE question_options (
     UNIQUE KEY uq_question_option (question_id, option_key),
     INDEX idx_question_options (question_id),
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE question_tags (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE question_tag_map (
     question_id BIGINT UNSIGNED NOT NULL,
@@ -130,7 +145,7 @@ CREATE TABLE question_tag_map (
     PRIMARY KEY (question_id, tag_id),
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES question_tags(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE question_media (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -140,19 +155,19 @@ CREATE TABLE question_media (
     alt_text VARCHAR(255),
     order_index INT DEFAULT 0,
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE question_revisions (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     question_id BIGINT UNSIGNED NOT NULL,
     version INT UNSIGNED NOT NULL,
-    question_data JSON NOT NULL,
+    question_data LONGTEXT NOT NULL,
     changed_by BIGINT UNSIGNED NULL,
     change_reason VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_question_version (question_id, version),
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 5. STUDENTS AND AUTHENTICATION
@@ -174,8 +189,8 @@ CREATE TABLE students (
     mobile_verified_at DATETIME NULL,
     last_login_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    updated_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_credentials (
     student_id BIGINT UNSIGNED PRIMARY KEY,
@@ -184,7 +199,7 @@ CREATE TABLE student_credentials (
     failed_login_attempts INT UNSIGNED DEFAULT 0,
     locked_until DATETIME NULL,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_sessions (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -198,16 +213,16 @@ CREATE TABLE student_sessions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_student_sessions (student_id, expires_at),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_preferences (
     student_id BIGINT UNSIGNED PRIMARY KEY,
     language_code VARCHAR(10) DEFAULT 'hi',
     theme ENUM('light', 'dark', 'system') DEFAULT 'system',
     notifications_enabled BOOLEAN DEFAULT TRUE,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_activity_logs (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -218,7 +233,7 @@ CREATE TABLE student_activity_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_student_activity (student_id, created_at),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 6. ASSESSMENTS / PRACTICE / MOCK TESTS
@@ -254,12 +269,12 @@ CREATE TABLE assessments (
     status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
     created_by BIGINT UNSIGNED NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL,
     INDEX idx_assessment_filter (exam_id, subject_id, assessment_type, status),
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE SET NULL,
     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE assessment_sections (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -271,7 +286,7 @@ CREATE TABLE assessment_sections (
     total_marks DECIMAL(8,2) DEFAULT 0.00,
     order_index INT DEFAULT 0,
     FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE assessment_questions (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -286,7 +301,7 @@ CREATE TABLE assessment_questions (
     FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE CASCADE,
     FOREIGN KEY (section_id) REFERENCES assessment_sections(id) ON DELETE SET NULL,
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 7. ASSESSMENT ATTEMPTS
@@ -304,7 +319,7 @@ CREATE TABLE assessment_attempts (
         'expired',
         'abandoned'
     ) DEFAULT 'in_progress',
-    start_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time DATETIME NULL,
     submission_time DATETIME NULL,
     total_questions INT UNSIGNED DEFAULT 0,
@@ -318,14 +333,14 @@ CREATE TABLE assessment_attempts (
     accuracy DECIMAL(6,2) DEFAULT 0.00,
     time_taken_seconds INT UNSIGNED DEFAULT 0,
     passed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME NULL,
+    updated_at DATETIME NULL,
     UNIQUE KEY uq_student_attempt (student_id, assessment_id, attempt_number),
     INDEX idx_student_attempts (student_id, created_at),
     INDEX idx_assessment_attempts (assessment_id, status),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE RESTRICT,
     FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 8. ATTEMPT QUESTION SNAPSHOTS
@@ -339,16 +354,16 @@ CREATE TABLE assessment_attempt_questions (
     order_index INT NOT NULL,
     marks DECIMAL(7,2) NOT NULL,
     negative_marks DECIMAL(7,2) NOT NULL,
-    question_snapshot JSON NOT NULL,
+    question_snapshot LONGTEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_attempt_question (attempt_id, question_id),
     UNIQUE KEY uq_attempt_order (attempt_id, order_index),
     FOREIGN KEY (attempt_id) REFERENCES assessment_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
--- 9. STUDENT ANSWERS
+-- 9. STUDENT ANSWERS (Includes per-question time tracking)
 -- =====================================================
 
 CREATE TABLE attempt_answers (
@@ -356,17 +371,18 @@ CREATE TABLE attempt_answers (
     attempt_id BIGINT UNSIGNED NOT NULL,
     attempt_question_id BIGINT UNSIGNED NOT NULL,
     answer_status ENUM('unanswered', 'answered', 'marked_for_review') DEFAULT 'unanswered',
+    selected_option_key VARCHAR(10) NULL,
     is_correct BOOLEAN NULL,
     marks_awarded DECIMAL(7,2) DEFAULT 0.00,
     time_spent_seconds INT UNSIGNED DEFAULT 0,
     first_answered_at DATETIME NULL,
     last_answered_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL,
     UNIQUE KEY uq_attempt_answer (attempt_id, attempt_question_id),
     FOREIGN KEY (attempt_id) REFERENCES assessment_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (attempt_question_id) REFERENCES assessment_attempt_questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE attempt_answer_options (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -375,7 +391,7 @@ CREATE TABLE attempt_answer_options (
     UNIQUE KEY uq_answer_option (answer_id, option_id),
     FOREIGN KEY (answer_id) REFERENCES attempt_answers(id) ON DELETE CASCADE,
     FOREIGN KEY (option_id) REFERENCES question_options(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE attempt_question_reviews (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -386,7 +402,7 @@ CREATE TABLE attempt_question_reviews (
     UNIQUE KEY uq_attempt_review (attempt_id, attempt_question_id),
     FOREIGN KEY (attempt_id) REFERENCES assessment_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (attempt_question_id) REFERENCES assessment_attempt_questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE attempt_events (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -403,12 +419,12 @@ CREATE TABLE attempt_events (
         'submitted',
         'auto_submitted'
     ) NOT NULL,
-    event_data JSON NULL,
+    event_data LONGTEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_attempt_events (attempt_id, created_at),
     FOREIGN KEY (attempt_id) REFERENCES assessment_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (attempt_question_id) REFERENCES assessment_attempt_questions(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 10. RESULTS AND PERFORMANCE
@@ -431,7 +447,7 @@ CREATE TABLE attempt_results (
     passed BOOLEAN DEFAULT FALSE,
     calculated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (attempt_id) REFERENCES assessment_attempts(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_subject_performance (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -449,7 +465,7 @@ CREATE TABLE student_subject_performance (
     UNIQUE KEY uq_student_subject (student_id, subject_id),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_topic_performance (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -466,7 +482,7 @@ CREATE TABLE student_topic_performance (
     UNIQUE KEY uq_student_topic (student_id, topic_id),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_daily_stats (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -478,7 +494,7 @@ CREATE TABLE student_daily_stats (
     study_time_seconds INT UNSIGNED DEFAULT 0,
     UNIQUE KEY uq_student_daily (student_id, stat_date),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 11. BOOKMARKS AND REPORTS
@@ -493,7 +509,7 @@ CREATE TABLE student_bookmarks (
     UNIQUE KEY uq_student_bookmark (student_id, question_id),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE student_question_reports (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -514,7 +530,7 @@ CREATE TABLE student_question_reports (
     INDEX idx_question_reports (question_id, status),
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 12. ADMIN AND ROLE MANAGEMENT
@@ -524,7 +540,7 @@ CREATE TABLE roles (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     description VARCHAR(255)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE admin_users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -534,8 +550,8 @@ CREATE TABLE admin_users (
     status ENUM('active', 'inactive') DEFAULT 'active',
     last_login_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    updated_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE admin_role_map (
     admin_id BIGINT UNSIGNED NOT NULL,
@@ -543,7 +559,7 @@ CREATE TABLE admin_role_map (
     PRIMARY KEY (admin_id, role_id),
     FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE admin_activity_logs (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -551,17 +567,17 @@ CREATE TABLE admin_activity_logs (
     action VARCHAR(150) NOT NULL,
     entity_type VARCHAR(100),
     entity_id BIGINT UNSIGNED NULL,
-    details JSON NULL,
+    details LONGTEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_admin_activity (admin_id, created_at),
     FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- =====================================================
 -- 13. INITIAL ROLES
 -- =====================================================
 
-INSERT INTO roles (name, description) VALUES
+INSERT IGNORE INTO roles (name, description) VALUES
 ('super_admin', 'Complete system access'),
 ('admin', 'Administrative access'),
 ('question_manager', 'Manage question bank'),
@@ -572,92 +588,225 @@ INSERT INTO roles (name, description) VALUES
 -- 14. INITIAL EXAM AND SUBJECT
 -- =====================================================
 
-INSERT INTO exams (name, code, description)
+INSERT IGNORE INTO exams (name, code, description)
 VALUES (
     'Rajasthan Informatics Assistant',
     'RAJ_INFORMATICS_ASSISTANT',
     'Rajasthan Informatics Assistant examination preparation'
 );
 
-INSERT INTO subjects (name, code, description)
-VALUES (
-    'Reasoning',
-    'REASONING',
-    'Logical and analytical reasoning'
-);
+INSERT IGNORE INTO subjects (name, code, description)
+VALUES 
+('Reasoning', 'REASONING', 'Logical and analytical reasoning'),
+('Mathematics', 'MATHEMATICS', 'Quantitative Aptitude and Numerical Ability'),
+('Computer Fundamentals', 'COMPUTER', 'Computer Awareness, IT and Networking'),
+('General Knowledge', 'GK', 'History, Geography, Polity, and Current Affairs');
 
-INSERT INTO exam_subjects (exam_id, subject_id)
+INSERT IGNORE INTO exam_subjects (exam_id, subject_id)
 SELECT e.id, s.id
 FROM exams e
 CROSS JOIN subjects s
-WHERE e.code = 'RAJ_INFORMATICS_ASSISTANT'
-AND s.code = 'REASONING';
+WHERE e.code = 'RAJ_INFORMATICS_ASSISTANT';
 
 -- =====================================================
 -- 15. REASONING TOPICS
 -- =====================================================
 
-INSERT INTO topics (
-    subject_id,
-    parent_id,
-    name,
-    slug,
-    priority,
-    level,
-    order_index
-)
+INSERT IGNORE INTO topics (subject_id, parent_id, name, slug, priority, level, order_index)
 SELECT id, NULL, 'Blood Relation', 'blood-relation', 'high', 1, 1
 FROM subjects
 WHERE code = 'REASONING';
 
--- Level 1 - High Priority
-
-INSERT INTO topics (
-    subject_id,
-    parent_id,
-    name,
-    slug,
-    priority,
-    level,
-    order_index
-)
-SELECT
-    t.subject_id,
-    t.id,
-    'Basic / One Line Questions',
-    'basic-one-line',
-    'high',
-    2,
-    1
+INSERT IGNORE INTO topics (subject_id, parent_id, name, slug, priority, level, order_index)
+SELECT t.subject_id, t.id, 'Basic / One Line Questions', 'basic-one-line', 'high', 2, 1
 FROM topics t
 JOIN subjects s ON s.id = t.subject_id
-WHERE s.code = 'REASONING'
-AND t.slug = 'blood-relation';
+WHERE s.code = 'REASONING' AND t.slug = 'blood-relation';
 
--- Direct Relationship
-
-INSERT INTO topics (
-    subject_id,
-    parent_id,
-    name,
-    slug,
-    priority,
-    level,
-    order_index
-)
-SELECT
-    t.subject_id,
-    t.id,
-    'Direct Relationship',
-    'direct-relationship',
-    'high',
-    3,
-    1
+INSERT IGNORE INTO topics (subject_id, parent_id, name, slug, priority, level, order_index)
+SELECT t.subject_id, t.id, 'Direct Relationship', 'direct-relationship', 'high', 3, 1
 FROM topics t
 JOIN subjects s ON s.id = t.subject_id
-WHERE s.code = 'REASONING'
-AND t.slug = 'basic-one-line';
+WHERE s.code = 'REASONING' AND t.slug = 'basic-one-line';
+
+-- Additional Root Topics
+INSERT IGNORE INTO topics (subject_id, parent_id, name, slug, priority, level, order_index)
+SELECT id, NULL, 'Syllogism', 'syllogism', 'high', 1, 2
+FROM subjects WHERE code = 'REASONING';
+
+INSERT IGNORE INTO topics (subject_id, parent_id, name, slug, priority, level, order_index)
+SELECT id, NULL, 'Number System', 'number-system', 'high', 1, 1
+FROM subjects WHERE code = 'MATHEMATICS';
+
+INSERT IGNORE INTO topics (subject_id, parent_id, name, slug, priority, level, order_index)
+SELECT id, NULL, 'Networking & OSI', 'networking-osi', 'high', 1, 1
+FROM subjects WHERE code = 'COMPUTER';
 
 -- =====================================================
--- END OF SCHEMA
+-- 16. INITIAL DEMO STUDENT & QUESTIONS
 -- =====================================================
+
+INSERT IGNORE INTO students (id, full_name, username, email, mobile, account_status)
+VALUES (1, 'Rahul Verma (Candidate)', 'rahul_candidate', 'rahul@examforge.in', '9876543210', 'active');
+
+INSERT IGNORE INTO student_credentials (student_id, password_hash)
+VALUES (1, '12345');
+
+-- Sample Questions
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 1, s.id, t.id,
+'Pointing to a photograph of a boy, Suresh said, "He is the son of the only son of my mother." How is Suresh related to that boy?',
+'single_choice', 'easy', 'approved',
+'Suresh\'s mother\'s only son is Suresh himself. So, the boy is the son of Suresh. Thus, Suresh is the father of the boy.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'direct-relationship'
+WHERE s.code = 'REASONING';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(1, 'A', 'Brother', 0),
+(1, 'B', 'Uncle', 0),
+(1, 'C', 'Father', 1),
+(1, 'D', 'Cousin', 0);
+
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 2, s.id, t.id,
+'A is B\'s sister. C is B\'s mother. D is C\'s father. E is D\'s mother. Then, how is A related to D?',
+'single_choice', 'medium', 'approved',
+'A is the sister of B and C is the mother of B, so A is the daughter of C. D is C\'s father, which makes A the granddaughter of D.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'direct-relationship'
+WHERE s.code = 'REASONING';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(2, 'A', 'Grandmother', 0),
+(2, 'B', 'Granddaughter', 1),
+(2, 'C', 'Daughter', 0),
+(2, 'D', 'Aunt', 0);
+
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 3, s.id, t.id,
+'Which unit of the CPU is directly responsible for performing arithmetic and logical comparisons?',
+'single_choice', 'easy', 'approved',
+'The ALU (Arithmetic Logic Unit) executes mathematical operations (addition, subtraction) and logical decisions.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'networking-osi'
+WHERE s.code = 'COMPUTER';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(3, 'A', 'Control Unit (CU)', 0),
+(3, 'B', 'Arithmetic Logic Unit (ALU)', 1),
+(3, 'C', 'Memory Unit (MU)', 0),
+(3, 'D', 'Register Array', 0);
+
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 4, s.id, t.id,
+'At which layer of the OSI model does the Internet Protocol (IP) operate?',
+'single_choice', 'easy', 'approved',
+'IP is a Layer 3 (Network Layer) protocol responsible for packet forwarding and logical routing.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'networking-osi'
+WHERE s.code = 'COMPUTER';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(4, 'A', 'Data Link Layer', 0),
+(4, 'B', 'Transport Layer', 0),
+(4, 'C', 'Network Layer', 1),
+(4, 'D', 'Session Layer', 0);
+
+-- Initial Assessment / Practice Drill
+INSERT IGNORE INTO assessments (id, title, slug, description, assessment_type, duration_minutes, total_questions, total_marks, passing_percentage, status)
+VALUES (1, 'Rajasthan Informatics Assistant Practice Drill 01', 'raj-ia-drill-01', 'Speed and accuracy test covering Reasoning and Computer Fundamentals with question-level timing analysis.', 'practice', 20, 4, 4.00, 40.00, 'published');
+
+INSERT IGNORE INTO assessment_questions (assessment_id, question_id, order_index, marks, negative_marks)
+VALUES
+(1, 1, 1, 1.00, 0.25),
+(1, 2, 2, 1.00, 0.25),
+(1, 3, 3, 1.00, 0.25),
+(1, 4, 4, 1.00, 0.25);
+
+
+INSERT IGNORE INTO students (id, full_name, username, email, mobile, account_status)
+VALUES (1, 'Rahul Verma (Candidate)', 'rahul_candidate', 'rahul@examforge.in', '9876543210', 'active');
+
+INSERT IGNORE INTO student_credentials (student_id, password_hash)
+VALUES (1, '12345');
+
+-- Sample Questions
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 1, s.id, t.id,
+'Pointing to a photograph of a boy, Suresh said, "He is the son of the only son of my mother." How is Suresh related to that boy?',
+'single_choice', 'easy', 'approved',
+'Suresh\'s mother\'s only son is Suresh himself. So, the boy is the son of Suresh. Thus, Suresh is the father of the boy.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'direct-relationship'
+WHERE s.code = 'REASONING';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(1, 'A', 'Brother', 0),
+(1, 'B', 'Uncle', 0),
+(1, 'C', 'Father', 1),
+(1, 'D', 'Cousin', 0);
+
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 2, s.id, t.id,
+'A is B\'s sister. C is B\'s mother. D is C\'s father. E is D\'s mother. Then, how is A related to D?',
+'single_choice', 'medium', 'approved',
+'A is the sister of B and C is the mother of B, so A is the daughter of C. D is C\'s father, which makes A the granddaughter of D.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'direct-relationship'
+WHERE s.code = 'REASONING';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(2, 'A', 'Grandmother', 0),
+(2, 'B', 'Granddaughter', 1),
+(2, 'C', 'Daughter', 0),
+(2, 'D', 'Aunt', 0);
+
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 3, s.id, t.id,
+'Which unit of the CPU is directly responsible for performing arithmetic and logical comparisons?',
+'single_choice', 'easy', 'approved',
+'The ALU (Arithmetic Logic Unit) executes mathematical operations (addition, subtraction) and logical decisions.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'networking-osi'
+WHERE s.code = 'COMPUTER';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(3, 'A', 'Control Unit (CU)', 0),
+(3, 'B', 'Arithmetic Logic Unit (ALU)', 1),
+(3, 'C', 'Memory Unit (MU)', 0),
+(3, 'D', 'Register Array', 0);
+
+INSERT IGNORE INTO questions (id, subject_id, topic_id, question_text, question_type, difficulty, status, explanation, default_marks, default_negative_marks)
+SELECT 4, s.id, t.id,
+'At which layer of the OSI model does the Internet Protocol (IP) operate?',
+'single_choice', 'easy', 'approved',
+'IP is a Layer 3 (Network Layer) protocol responsible for packet forwarding and logical routing.',
+1.00, 0.25
+FROM subjects s
+JOIN topics t ON t.subject_id = s.id AND t.slug = 'networking-osi'
+WHERE s.code = 'COMPUTER';
+
+INSERT IGNORE INTO question_options (question_id, option_key, option_text, is_correct) VALUES
+(4, 'A', 'Data Link Layer', 0),
+(4, 'B', 'Transport Layer', 0),
+(4, 'C', 'Network Layer', 1),
+(4, 'D', 'Session Layer', 0);
+
+-- Initial Assessment / Practice Drill
+INSERT IGNORE INTO assessments (id, title, slug, description, assessment_type, duration_minutes, total_questions, total_marks, passing_percentage, status)
+VALUES (1, 'Rajasthan Informatics Assistant Practice Drill 01', 'raj-ia-drill-01', 'Speed and accuracy test covering Reasoning and Computer Fundamentals with question-level timing analysis.', 'practice', 20, 4, 4.00, 40.00, 'published');
+
+INSERT IGNORE INTO assessment_questions (assessment_id, question_id, order_index, marks, negative_marks)
+VALUES
+(1, 1, 1, 1.00, 0.25),
+(1, 2, 2, 1.00, 0.25),
+(1, 3, 3, 1.00, 0.25),
+(1, 4, 4, 1.00, 0.25);
