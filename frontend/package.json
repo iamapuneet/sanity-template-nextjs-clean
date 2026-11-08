@@ -3,9 +3,9 @@
   "private": true,
   "scripts": {
     "prebuild": "sanity typegen generate",
-    "build": "next build",
+    "build": "next build --webpack",
     "predev": "npm run sanity:typegen",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "sanity:typegen": "cd ../studio && sanity schema extract --enforce-required-fields --path ../sanity.schema.json && cd ../frontend && sanity typegen generate",

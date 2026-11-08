@@ -16,13 +16,17 @@ import {resolveOpenGraphImage} from '@/sanity/lib/utils'
  * Learn more: https://nextjs.org/docs/app/api-reference/functions/generate-static-params
  */
 export async function generateStaticParams() {
-  const {data} = await sanityFetch({
-    query: postPagesSlugs,
-    // Use the published perspective in generateStaticParams
-    perspective: 'published',
-    stega: false,
-  })
-  return data
+  try {
+    const {data} = await sanityFetch({
+      query: postPagesSlugs,
+      // Use the published perspective in generateStaticParams
+      perspective: 'published',
+      stega: false,
+    })
+    return data || []
+  } catch {
+    return []
+  }
 }
 
 /**
@@ -34,12 +38,17 @@ export async function generateMetadata(
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const params = await props.params
-  const {data: post} = await sanityFetch({
-    query: postQuery,
-    params,
-    // Metadata should never contain stega
-    stega: false,
-  })
+  let post: any = null
+  try {
+    const res = await sanityFetch({
+      query: postQuery,
+      params,
+      stega: false,
+    })
+    post = res.data
+  } catch {
+    // Fallback
+  }
   const previousImages = (await parent).openGraph?.images || []
   const ogImage = resolveOpenGraphImage(post?.coverImage)
 
@@ -58,7 +67,13 @@ export async function generateMetadata(
 
 export default async function PostPage(props: PageProps<'/posts/[slug]'>) {
   const params = await props.params
-  const [{data: post}] = await Promise.all([sanityFetch({query: postQuery, params})])
+  let post: any = null
+  try {
+    const res = await sanityFetch({query: postQuery, params})
+    post = res.data
+  } catch {
+    // Fallback
+  }
 
   if (!post?._id) {
     return notFound()

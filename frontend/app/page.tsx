@@ -7,9 +7,15 @@ import { sanityFetch } from '@/sanity/lib/live'
 import { dataAttr } from '@/sanity/lib/utils'
 
 export default async function Page() {
-  const { data: settings } = await sanityFetch({
-    query: settingsQuery,
-  })
+  let settings: any = null
+  try {
+    const res = await sanityFetch({
+      query: settingsQuery,
+    })
+    settings = res.data
+  } catch {
+    // Fallback
+  }
 
   return (
     <div className="space-y-16 pb-20">

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AdminHeader from '@/components/admin/AdminHeader'
 import Modal from '@/components/admin/Modal'
@@ -9,7 +9,7 @@ import { useExamStore } from '@/lib/store'
 import { Question, QuestionOption, DifficultyLevel, ApprovalStatus } from '@/lib/exam-types'
 import { toast } from 'sonner'
 
-export default function QuestionsPage() {
+function QuestionsContent() {
   const searchParams = useSearchParams()
   const [mobileOpen, setMobileOpen] = useState(false)
   const {
@@ -721,6 +721,20 @@ export default function QuestionsPage() {
         </div>
       </Modal>
     </div>
+  )
+}
+
+export default function QuestionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-xs text-gray-400">
+          Loading Question Bank...
+        </div>
+      }
+    >
+      <QuestionsContent />
+    </Suspense>
   )
 }
 

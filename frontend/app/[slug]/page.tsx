@@ -12,13 +12,17 @@ import {PageOnboarding} from '@/app/components/Onboarding'
  * Learn more: https://nextjs.org/docs/app/api-reference/functions/generate-static-params
  */
 export async function generateStaticParams() {
-  const {data} = await sanityFetch({
-    query: pagesSlugs,
-    // // Use the published perspective in generateStaticParams
-    perspective: 'published',
-    stega: false,
-  })
-  return data
+  try {
+    const {data} = await sanityFetch({
+      query: pagesSlugs,
+      // // Use the published perspective in generateStaticParams
+      perspective: 'published',
+      stega: false,
+    })
+    return data || []
+  } catch {
+    return []
+  }
 }
 
 /**
@@ -27,22 +31,33 @@ export async function generateStaticParams() {
  */
 export async function generateMetadata(props: PageProps<'/[slug]'>): Promise<Metadata> {
   const params = await props.params
-  const {data: page} = await sanityFetch({
-    query: getPageQuery,
-    params,
-    // Metadata should never contain stega
-    stega: false,
-  })
+  let page: any = null
+  try {
+    const res = await sanityFetch({
+      query: getPageQuery,
+      params,
+      stega: false,
+    })
+    page = res.data
+  } catch {
+    // Fallback
+  }
 
   return {
-    title: page?.name,
-    description: page?.heading,
+    title: page?.name || 'Page',
+    description: page?.heading || '',
   } satisfies Metadata
 }
 
 export default async function Page(props: PageProps<'/[slug]'>) {
   const params = await props.params
-  const [{data: page}] = await Promise.all([sanityFetch({query: getPageQuery, params})])
+  let page: any = null
+  try {
+    const res = await sanityFetch({query: getPageQuery, params})
+    page = res.data
+  } catch {
+    // Fallback
+  }
 
   if (!page?._id) {
     return (

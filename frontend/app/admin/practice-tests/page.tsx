@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AdminHeader from '@/components/admin/AdminHeader'
 import Modal from '@/components/admin/Modal'
@@ -9,7 +9,7 @@ import { useExamStore } from '@/lib/store'
 import { PracticeTest } from '@/lib/exam-types'
 import { toast } from 'sonner'
 
-export default function PracticeTestsPage() {
+function PracticeTestsContent() {
   const searchParams = useSearchParams()
   const [mobileOpen, setMobileOpen] = useState(false)
   const {
@@ -463,6 +463,20 @@ export default function PracticeTestsPage() {
         </div>
       </Modal>
     </div>
+  )
+}
+
+export default function PracticeTestsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-xs text-gray-400">
+          Loading Practice Tests...
+        </div>
+      }
+    >
+      <PracticeTestsContent />
+    </Suspense>
   )
 }
 
