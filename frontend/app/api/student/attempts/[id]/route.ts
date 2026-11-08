@@ -103,3 +103,4 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
