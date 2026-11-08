@@ -723,7 +723,7 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
       </header>
 
       {/* 2. Main Focused Examination Workspace */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Left Column: Active Question Statement & Options (3 Cols) */}
         <div className="lg:col-span-3 flex flex-col justify-between rounded-3xl bg-white border border-gray-200 p-5 md:p-8 shadow-xs">
           <div>
@@ -806,7 +806,7 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
                 type="button"
                 onClick={handleClearResponse}
                 disabled={!currentSelectedOption}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 Clear Response
               </button>
@@ -814,7 +814,7 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
               <button
                 type="button"
                 onClick={handleMarkForReviewAndNext}
-                className="px-4 py-2.5 rounded-xl border border-gray-400 bg-gray-50 hover:bg-gray-100 text-black text-xs font-bold transition-colors"
+                className="px-4 py-2.5 rounded-xl border border-gray-400 bg-gray-50 hover:bg-gray-100 text-black text-xs font-bold transition-colors cursor-pointer"
               >
                 Mark for Review & Next
               </button>
@@ -825,7 +825,7 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
                 type="button"
                 onClick={() => goToQuestion(currentIndex - 1)}
                 disabled={currentIndex === 0}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-100 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-100 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Icons.ChevronLeft size={14} />
                 <span>Previous</span>
@@ -834,7 +834,7 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
               <button
                 type="button"
                 onClick={handleSaveAndNext}
-                className="px-6 py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-extrabold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                className="px-6 py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-extrabold text-xs transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <span>Save & Next</span>
                 <Icons.ChevronRight size={14} />
@@ -843,33 +843,73 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Right Column: Question Palette & Navigation Grid (1 Col) */}
-        <div className="flex flex-col rounded-3xl bg-white border border-gray-200 p-5 shadow-xs space-y-5">
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black">
-              Question Palette
-            </h2>
-            <p className="text-[11px] text-gray-500 mt-0.5">Quick jump to any question</p>
+        {/* Right Column: Question Palette (Ultra Clean & Compact) */}
+        <div className="lg:col-span-1 rounded-3xl bg-white border border-gray-200 p-5 shadow-xs space-y-4 lg:sticky lg:top-20">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div>
+              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-gray-400 block">
+                Overview
+              </span>
+              <h2 className="text-sm font-black text-black tracking-tight">
+                Question Palette
+              </h2>
+            </div>
+            <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-black text-white">
+              {answeredCount}/{questions.length}
+            </span>
           </div>
 
-          {/* Status Counts Legend */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 border border-gray-100">
-              <span className="w-3.5 h-3.5 rounded-md bg-black"></span>
-              <span className="text-gray-700 text-[11px]">Answered ({answeredCount})</span>
+          {/* Completion Progress Bar */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px] font-semibold text-gray-600">
+              <span>Completion Rate</span>
+              <span className="font-mono text-black font-bold">
+                {Math.round((answeredCount / (questions.length || 1)) * 100)}%
+              </span>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 border border-gray-100">
-              <span className="w-3.5 h-3.5 rounded-md bg-gray-300"></span>
-              <span className="text-gray-700 text-[11px]">Unanswered ({unansweredCount})</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 border border-gray-100 col-span-2">
-              <span className="w-3.5 h-3.5 rounded-md border-2 border-black bg-white"></span>
-              <span className="text-gray-700 text-[11px]">Marked for Review ({reviewCount})</span>
+            <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className="h-full bg-black transition-all duration-300 rounded-full"
+                style={{ width: `${(answeredCount / (questions.length || 1)) * 100}%` }}
+              />
             </div>
           </div>
 
-          {/* Numbered Palette Grid */}
-          <div className="flex-1 max-h-72 overflow-y-auto pr-1">
+          {/* Compact 3-Column Stats Counter */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
+              <div className="font-mono font-black text-black text-sm">{answeredCount}</div>
+              <div className="text-[9px] uppercase font-bold text-gray-500">Answered</div>
+            </div>
+            <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
+              <div className="font-mono font-black text-black text-sm">{reviewCount}</div>
+              <div className="text-[9px] uppercase font-bold text-gray-500">Review</div>
+            </div>
+            <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-center">
+              <div className="font-mono font-black text-black text-sm">{unansweredCount}</div>
+              <div className="text-[9px] uppercase font-bold text-gray-500">Skipped</div>
+            </div>
+          </div>
+
+          {/* Quick Legend Pills */}
+          <div className="flex items-center justify-between text-[10px] text-gray-500 px-1 pt-0.5">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-sm bg-black inline-block"></span>
+              <span>Answered</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-sm border border-black bg-white inline-block"></span>
+              <span>Review</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-sm bg-gray-200 inline-block"></span>
+              <span>Unvisited</span>
+            </span>
+          </div>
+
+          {/* Numbered Palette Grid (Pixel-Perfect, No Ring Artifacts) */}
+          <div className="pt-2">
             <div className="grid grid-cols-5 gap-2">
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIndex
@@ -877,20 +917,24 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
                 const isAnswered = status === 'answered'
                 const isReview = status === 'marked_for_review'
 
+                let style = 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                if (isAnswered) {
+                  style = 'bg-black text-white font-bold border border-black shadow-xs'
+                } else if (isReview) {
+                  style = 'bg-white text-black font-bold border-2 border-black'
+                }
+
                 return (
                   <button
                     key={q.question_id}
+                    type="button"
                     onClick={() => goToQuestion(idx)}
-                    className={`h-9 rounded-xl font-mono text-xs font-bold transition-all flex items-center justify-center ${
+                    className={`h-9 w-full rounded-xl font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${style} ${
                       isCurrent
-                        ? 'ring-2 ring-black ring-offset-2 font-black'
+                        ? isAnswered
+                          ? 'ring-2 ring-black ring-offset-2'
+                          : 'border-2 border-black bg-neutral-100 text-black shadow-xs'
                         : ''
-                    } ${
-                      isAnswered
-                        ? 'bg-black text-white'
-                        : isReview
-                        ? 'bg-white border-2 border-black text-black'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     {idx + 1}
@@ -900,15 +944,19 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* Submit Trigger inside Palette */}
-          <div className="pt-4 border-t border-gray-100">
+          {/* Bottom Submit CTA Button (No awkward empty space) */}
+          <div className="pt-3 border-t border-gray-100 space-y-2">
             <button
               type="button"
               onClick={() => setShowSubmitModal(true)}
-              className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-bold text-xs transition-colors shadow-xs"
+              className="w-full py-3 rounded-xl bg-black hover:bg-neutral-800 text-white font-black text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
-              Submit Entire Assessment
+              <span>Submit Entire Assessment</span>
+              <Icons.ChevronRight size={14} />
             </button>
+            <p className="text-[10px] text-center text-gray-400 font-mono">
+              Live Auto-Save Enabled
+            </p>
           </div>
         </div>
       </div>
