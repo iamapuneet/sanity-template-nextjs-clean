@@ -1,318 +1,342 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import AdminHeader from '@/components/admin/AdminHeader'
-import MetricCard from '@/components/admin/MetricCard'
 import { Icons } from '@/components/admin/Icons'
-import { useExamStore } from '@/lib/store'
 
 export default function AdminDashboardPage() {
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const { summary, subjects, questions, approveQuestion } = useExamStore()
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<any>({
+    stats: {
+      totalStudents: 0,
+      totalSubjects: 0,
+      totalTopics: 0,
+      totalQuestions: 0,
+      approvedQuestions: 0,
+      pendingQuestions: 0,
+      totalMockTests: 0,
+      totalAttempts: 0,
+      pendingReports: 0,
+      avgScore: 0,
+      avgAccuracy: 0,
+    },
+    subjectStats: [],
+    recentQuestions: [],
+    recentAttempts: [],
+  })
 
-  // Calculate subject question percentages
-  const totalQ = summary.totalQuestions || 1
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/admin/dashboard')
+      const json = await res.json()
+      if (json.success) {
+        setData(json)
+      }
+    } catch (err) {
+      console.error('Failed to load dashboard:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDashboard()
+  }, [])
 
   return (
     <div className="space-y-6">
-      <AdminHeader
-        onToggleMobile={() => setMobileOpen(true)}
-        title="Dashboard Overview"
-        subtitle="Government Exam Question Bank & Management Hub"
-      />
-
-      <div className="px-4 sm:px-6 lg:px-8 space-y-6 max-w-7xl mx-auto">
-        {/* Welcome / Quick Banner (Matte Black Theme) */}
-        <div className="bg-gradient-to-r from-black via-gray-950 to-gray-900 rounded-3xl p-6 sm:p-8 text-white shadow-sm border border-gray-800 relative overflow-hidden">
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-semibold uppercase tracking-wider text-gray-300">
-              <Icons.Shield size={14} className="text-white" />
-              ExamForge Admin Suite
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Welcome back to ExamForge
-            </h2>
-            <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-              Manage your centralized government exam repository. Organize subjects, hierarchical topics, curate verified MCQ questions, and build mock tests with precision.
+      {/* Top Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-black text-white p-6 md:p-8 border border-neutral-800 shadow-sm">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-900 border border-neutral-700 text-neutral-300 mb-2">
+              <span className="w-2 h-2 rounded-full bg-white"></span>
+              Live Database Connected • MySQL 5.5
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+              ExamForge Admin Overview
+            </h1>
+            <p className="text-sm md:text-base text-neutral-400 mt-1 max-w-2xl">
+              Rajasthan Informatics Assistant Question Bank, Hierarchical Syllabus Tree & Candidate Practice Management.
             </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Link
-                href="/admin/questions?action=new"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-black font-bold text-sm shadow-sm hover:bg-gray-100 transition-colors"
-              >
-                <Icons.Plus size={16} />
-                Add Question
-              </Link>
-              <Link
-                href="/admin/practice-tests?action=create"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-medium text-sm border border-gray-700 transition-colors"
-              >
-                <Icons.PracticeTests size={16} />
-                Build Practice Test
-              </Link>
-            </div>
           </div>
-          {/* Subtle geometric lines */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-white/5 to-transparent pointer-events-none" />
-        </div>
-
-        {/* 5 Summary Metric Cards (Monochrome Minimalist) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <MetricCard
-            title="Total Subjects"
-            value={summary.totalSubjects}
-            subtitle="Configured Subjects"
-            icon={<Icons.Subjects size={22} />}
-            iconBgColor="bg-gray-100 text-black border border-gray-200"
-          />
-          <MetricCard
-            title="Total Topics"
-            value={summary.totalTopics}
-            subtitle="Hierarchical Nodes"
-            icon={<Icons.Topics size={22} />}
-            iconBgColor="bg-gray-100 text-black border border-gray-200"
-          />
-          <MetricCard
-            title="Total Questions"
-            value={summary.totalQuestions}
-            subtitle="MCQs in Repository"
-            icon={<Icons.Questions size={22} />}
-            iconBgColor="bg-gray-100 text-black border border-gray-200"
-          />
-          <MetricCard
-            title="Approved"
-            value={summary.approvedQuestions}
-            subtitle="Ready for Tests"
-            icon={<Icons.CheckCircle size={22} />}
-            iconBgColor="bg-black text-white"
-            trend={`${Math.round((summary.approvedQuestions / totalQ) * 100)}% verified`}
-            trendPositive={true}
-          />
-          <MetricCard
-            title="Pending Review"
-            value={summary.pendingQuestions}
-            subtitle="Requires Verification"
-            icon={<Icons.AlertCircle size={22} />}
-            iconBgColor="bg-gray-100 text-black border border-gray-200"
-            trend={summary.pendingQuestions > 0 ? 'Needs Attention' : 'All Clear'}
-            trendPositive={summary.pendingQuestions === 0}
-          />
-        </div>
-
-        {/* Two-Column Layout: Subject Statistics & Recently Added Questions */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column (8 cols): Subject-wise question statistics & Quick Links */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Subject Distribution */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-base font-bold text-gray-900">
-                    Subject-wise Question Statistics
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    Distribution of approved and pending questions across subjects
-                  </p>
-                </div>
-                <Link
-                  href="/admin/subjects"
-                  className="text-xs font-bold text-black hover:underline flex items-center gap-1"
-                >
-                  Manage Subjects <Icons.ChevronRight size={14} />
-                </Link>
-              </div>
-
-              <div className="space-y-4">
-                {subjects.map((sub) => {
-                  const subQuestions = questions.filter((q) => q.subjectId === sub.id)
-                  const count = subQuestions.length
-                  const pct = Math.round((count / totalQ) * 100) || 0
-                  const approvedInSub = subQuestions.filter((q) => q.status === 'approved').length
-
-                  return (
-                    <div key={sub.id} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-gray-900">{sub.name}</span>
-                          <span className="text-gray-400 font-mono">({sub.code})</span>
-                        </div>
-                        <div className="flex items-center gap-2 font-mono">
-                          <span className="text-gray-600 font-medium">{approvedInSub} approved</span>
-                          <span className="text-gray-300">•</span>
-                          <span className="font-bold text-gray-900">{count} total</span>
-                          <span className="text-gray-400">({pct}%)</span>
-                        </div>
-                      </div>
-                      <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
-                        <div
-                          className="bg-black h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, Math.max(8, pct))}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Quick Action Matrix */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
-              <h3 className="text-base font-bold text-gray-900 mb-3">
-                Quick Administrative Tasks
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Link
-                  href="/admin/subjects"
-                  className="p-3.5 rounded-xl border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                    <Icons.Subjects size={18} />
-                  </div>
-                  <div className="text-xs font-bold text-gray-900">Manage Subjects</div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">Add/modify syllabus subjects</div>
-                </Link>
-
-                <Link
-                  href="/admin/topics"
-                  className="p-3.5 rounded-xl border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                    <Icons.Topics size={18} />
-                  </div>
-                  <div className="text-xs font-bold text-gray-900">Topic Hierarchy</div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">Build multi-level topic trees</div>
-                </Link>
-
-                <Link
-                  href="/admin/practice-tests"
-                  className="p-3.5 rounded-xl border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-                    <Icons.PracticeTests size={18} />
-                  </div>
-                  <div className="text-xs font-bold text-gray-900">Create Tests</div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">Curate tests with checkboxes</div>
-                </Link>
-              </div>
-            </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/questions?action=new"
+              className="px-4 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-colors shadow-sm flex items-center gap-2"
+            >
+              <Icons.Plus size={16} />
+              Add Question
+            </Link>
+            <Link
+              href="/practice"
+              target="_blank"
+              className="px-4 py-2.5 rounded-xl bg-neutral-900 text-white font-semibold text-sm border border-neutral-700 hover:bg-neutral-800 transition-colors flex items-center gap-2"
+            >
+              <Icons.CandidatePortal size={16} />
+              Student Portal
+            </Link>
           </div>
+        </div>
+      </div>
 
-          {/* Right Column (5 cols): Recently Added Questions & Pending Approvals */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Pending Questions Card */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-base font-bold text-gray-900">
-                    Review Queue
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    Questions awaiting admin approval
-                  </p>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-900 border border-gray-300 text-xs font-bold">
-                  {summary.pendingQuestions} pending
+      {/* KPI Metric Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {[
+          {
+            label: 'Total Students',
+            value: data.stats.totalStudents,
+            href: '/admin/students',
+            icon: Icons.Students,
+          },
+          {
+            label: 'Active Subjects',
+            value: data.stats.totalSubjects,
+            href: '/admin/subjects',
+            icon: Icons.Subjects,
+          },
+          {
+            label: 'Syllabus Topics',
+            value: data.stats.totalTopics,
+            href: '/admin/topics',
+            icon: Icons.Topics,
+          },
+          {
+            label: 'Total Questions',
+            value: data.stats.totalQuestions,
+            href: '/admin/questions',
+            icon: Icons.Questions,
+          },
+          {
+            label: 'Approved Bank',
+            value: data.stats.approvedQuestions,
+            href: '/admin/questions?status=approved',
+            icon: Icons.CheckCircle,
+          },
+          {
+            label: 'Mock Tests',
+            value: data.stats.totalMockTests,
+            href: '/admin/practice-tests',
+            icon: Icons.PracticeTests,
+          },
+        ].map((item, idx) => {
+          const IconComp = item.icon
+          return (
+            <Link
+              key={idx}
+              href={item.href}
+              className="p-4 rounded-xl bg-white border border-gray-200 hover:border-black transition-all hover:shadow-xs group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {item.label}
                 </span>
-              </div>
-
-              {summary.pendingQuestions === 0 ? (
-                <div className="py-8 text-center text-gray-500 space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-gray-100 text-black mx-auto flex items-center justify-center border border-gray-200">
-                    <Icons.Check size={20} />
-                  </div>
-                  <p className="text-xs font-medium">All questions are approved and published!</p>
+                <div className="p-1.5 rounded-lg bg-gray-100 text-gray-700 group-hover:bg-black group-hover:text-white transition-colors">
+                  <IconComp size={16} />
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {questions
-                    .filter((q) => q.status === 'pending')
-                    .slice(0, 3)
-                    .map((q) => {
-                      const sub = subjects.find((s) => s.id === q.subjectId)
-                      return (
-                        <div
-                          key={q.id}
-                          className="p-3.5 rounded-xl border border-gray-200 bg-gray-50/50 space-y-2"
-                        >
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-bold text-gray-900">{sub?.name || 'General'}</span>
-                            <span className="px-2 py-0.5 rounded-md bg-black text-white font-bold uppercase text-[10px]">
-                              {q.difficulty}
-                            </span>
-                          </div>
-                          <p className="text-xs text-gray-800 line-clamp-2 font-medium">
-                            {q.questionText}
-                          </p>
-                          <div className="flex items-center justify-end gap-2 pt-1">
-                            <Link
-                              href="/admin/questions"
-                              className="text-[11px] text-gray-600 hover:text-black font-semibold px-2 py-1"
-                            >
-                              Inspect
-                            </Link>
-                            <button
-                              type="button"
-                              onClick={() => approveQuestion(q.id)}
-                              className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-black hover:bg-gray-800 text-white text-xs font-semibold transition-colors"
-                            >
-                              <Icons.Check size={14} />
-                              Approve
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                </div>
-              )}
-            </div>
-
-            {/* Recently Added Questions */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-bold text-gray-900">
-                  Recently Added Questions
-                </h3>
-                <Link
-                  href="/admin/questions"
-                  className="text-xs font-bold text-black hover:underline flex items-center gap-1"
-                >
-                  View All <Icons.ChevronRight size={14} />
-                </Link>
               </div>
-
-              <div className="space-y-3">
-                {questions.slice(0, 4).map((q) => {
-                  const sub = subjects.find((s) => s.id === q.subjectId)
-                  return (
-                    <div
-                      key={q.id}
-                      className="p-3 rounded-xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50/50 transition-colors space-y-1.5"
-                    >
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-bold text-gray-900">{sub?.name || 'General'}</span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full font-semibold text-[10px] ${
-                            q.status === 'approved'
-                              ? 'bg-black text-white'
-                              : 'bg-gray-100 text-gray-700 border border-gray-200'
-                          }`}
-                        >
-                          {q.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-800 line-clamp-2">
-                        {q.questionText}
-                      </p>
-                      <div className="text-[10px] text-gray-400 font-mono">
-                        Added: {q.createdAt} • Marks: {q.marks}
-                      </div>
-                    </div>
-                  )
-                })}
+              <div className="text-2xl font-black text-black">
+                {loading ? '...' : item.value}
               </div>
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* Secondary Performance Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center font-black text-lg">
+            {loading ? '-' : `${data.stats.avgScore}%`}
+          </div>
+          <div>
+            <div className="text-xs font-bold text-gray-500 uppercase">Average Score</div>
+            <div className="text-sm font-semibold text-gray-900">Across test submissions</div>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center font-black text-lg">
+            {loading ? '-' : `${data.stats.avgAccuracy}%`}
+          </div>
+          <div>
+            <div className="text-xs font-bold text-gray-500 uppercase">Platform Accuracy</div>
+            <div className="text-sm font-semibold text-gray-900">Correct vs attempted</div>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center font-black text-lg">
+            {loading ? '-' : data.stats.totalAttempts}
+          </div>
+          <div>
+            <div className="text-xs font-bold text-gray-500 uppercase">Test Attempts</div>
+            <div className="text-sm font-semibold text-gray-900">Candidate practice runs</div>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center font-black text-lg">
+            {loading ? '-' : data.stats.pendingReports}
+          </div>
+          <div>
+            <div className="text-xs font-bold text-gray-500 uppercase">Question Flags</div>
+            <div className="text-sm font-semibold text-gray-900">
+              <Link href="/admin/reports" className="underline hover:text-black">
+                Review student reports
+              </Link>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Main Grid: Subject Statistics & Recent Submissions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Subject wise Question Distribution (2 Columns) */}
+        <div className="lg:col-span-2 rounded-2xl bg-white border border-gray-200 p-5 shadow-xs">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-black">Subject-wise Bank Distribution</h2>
+              <p className="text-xs text-gray-500">Live question coverage across syllabus subjects</p>
+            </div>
+            <Link
+              href="/admin/subjects"
+              className="text-xs font-semibold text-black hover:underline flex items-center gap-1"
+            >
+              Manage Subjects <Icons.ChevronRight size={14} />
+            </Link>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            {data.subjectStats.map((sub: any) => {
+              const totalQ = sub.question_count || 0
+              const approvedQ = sub.approved_count || 0
+              const pct = totalQ > 0 ? Math.round((approvedQ / totalQ) * 100) : 0
+
+              return (
+                <div key={sub.id} className="py-3.5 flex items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-black">{sub.name}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+                        {sub.code}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                      <span>{sub.topic_count || 0} Topics</span>
+                      <span>•</span>
+                      <span>{totalQ} Questions ({approvedQ} approved)</span>
+                    </div>
+                  </div>
+
+                  <div className="w-36 flex flex-col items-end">
+                    <div className="text-xs font-bold text-black mb-1">{pct}% Approved</div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden border border-gray-200">
+                      <div
+                        className="bg-black h-full rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Recent Candidate Test Attempts (1 Column) */}
+        <div className="rounded-2xl bg-white border border-gray-200 p-5 shadow-xs flex flex-col">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-black">Recent Submissions</h2>
+              <p className="text-xs text-gray-500">Candidate test attempts & scores</p>
+            </div>
+            <Link
+              href="/admin/results"
+              className="text-xs font-semibold text-black hover:underline flex items-center gap-1"
+            >
+              All Results <Icons.ChevronRight size={14} />
+            </Link>
+          </div>
+
+          <div className="space-y-3 flex-1">
+            {data.recentAttempts.length === 0 ? (
+              <div className="py-12 text-center text-xs text-gray-400">
+                No candidate attempts recorded yet.<br />
+                Launch the student portal to take practice tests.
+              </div>
+            ) : (
+              data.recentAttempts.map((att: any) => (
+                <div
+                  key={att.id}
+                  className="p-3 rounded-xl border border-gray-200 bg-gray-50/50 hover:bg-white hover:border-black transition-all"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-xs text-black truncate max-w-[150px]">
+                      {att.student_name}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        att.passed
+                          ? 'bg-black text-white'
+                          : 'bg-gray-200 text-gray-800'
+                      }`}
+                    >
+                      {att.passed ? 'PASSED' : 'RETRY'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-600 truncate mb-2">{att.assessment_title}</div>
+                  <div className="flex items-center justify-between text-[11px] font-mono text-gray-500 border-t border-gray-200 pt-1.5">
+                    <span>Score: {Number(att.obtained_marks).toFixed(1)} / {Number(att.total_marks).toFixed(1)}</span>
+                    <span className="font-bold text-black">{Number(att.percentage).toFixed(0)}%</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recently Added Questions */}
+      <div className="rounded-2xl bg-white border border-gray-200 p-5 shadow-xs">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-black">Recently Added Questions</h2>
+            <p className="text-xs text-gray-500">Latest additions to the question repository</p>
+          </div>
+          <Link
+            href="/admin/questions"
+            className="text-xs font-semibold text-black hover:underline flex items-center gap-1"
+          >
+            Manage Question Bank <Icons.ChevronRight size={14} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {data.recentQuestions.map((q: any) => (
+            <div
+              key={q.id}
+              className="p-4 rounded-xl border border-gray-200 bg-white hover:border-black transition-colors"
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-black">{q.subject_name}</span>
+                  <span className="text-[10px] text-gray-400">•</span>
+                  <span className="text-xs text-gray-500">{q.topic_name}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-800 border border-gray-200">
+                    {q.language_code || 'en'}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-black text-white">
+                    {q.difficulty}
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.question_text}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

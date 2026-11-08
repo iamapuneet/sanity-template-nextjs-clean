@@ -1,39 +1,62 @@
 'use client'
 
-import React, { useState } from 'react'
-import AdminHeader from '@/components/admin/AdminHeader'
+import React, { useEffect, useState } from 'react'
 import Modal from '@/components/admin/Modal'
 import { Icons } from '@/components/admin/Icons'
-import { useExamStore } from '@/lib/store'
-import { Topic, TopicPriority } from '@/lib/exam-types'
-import { toast } from 'sonner'
 
 export default function TopicsPage() {
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const { subjects, topics, addTopic, updateTopic, deleteTopic, questions } = useExamStore()
-
-  // Selected subject for viewing tree
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number>(subjects[0]?.id || 1)
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [topics, setTopics] = useState<any[]>([])
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTopic, setEditingTopic] = useState<Topic | null>(null)
+  const [editingTopic, setEditingTopic] = useState<any>(null)
   const [targetParentId, setTargetParentId] = useState<number | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   // Form states
   const [topicName, setTopicName] = useState('')
-  const [topicCode, setTopicCode] = useState('')
-  const [priority, setPriority] = useState<TopicPriority>('medium')
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [resSubs, resTops] = await Promise.all([
+        fetch('/api/admin/subjects').then((r) => r.json()),
+        fetch('/api/admin/topics').then((r) => r.json()),
+      ])
+      if (resSubs.success && resSubs.subjects.length > 0) {
+        setSubjects(resSubs.subjects)
+        if (!selectedSubjectId) {
+          setSelectedSubjectId(resSubs.subjects[0].id)
+        }
+      }
+      if (resTops.success) {
+        setTopics(resTops.topics)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
 
   const currentSubject = subjects.find((s) => s.id === selectedSubjectId)
-  const subjectTopics = topics.filter((t) => t.subjectId === selectedSubjectId)
+  const subjectTopics = topics.filter((t) => t.subject_id === selectedSubjectId)
 
   // Build recursive topic tree for selected subject
-  const buildTree = (parentId: number | null = null, depth: number = 0): Array<Topic & { depth: number }> => {
-    const directChildren = subjectTopics.filter((t) => (t.parentId === null && parentId === null) || t.parentId === parentId)
-    let result: Array<Topic & { depth: number }> = []
+  const buildTree = (parentId: number | null = null, depth: number = 0): Array<any & { depth: number }> => {
+    const directChildren = subjectTopics.filter(
+      (t) => (t.parent_id === null && parentId === null) || t.parent_id === parentId
+    )
+    let result: Array<any & { depth: number }> = []
 
     for (const child of directChildren) {
       result.push({ ...child, depth })
@@ -48,258 +71,275 @@ export default function TopicsPage() {
     ? flattenedTree.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()))
     : flattenedTree
 
-  // Open modal to add root topic or subtopic
   const handleOpenAdd = (parentId: number | null = null) => {
     setEditingTopic(null)
     setTargetParentId(parentId)
     setTopicName('')
-    setTopicCode('')
     setPriority('medium')
     setIsModalOpen(true)
   }
 
-  const handleOpenEdit = (t: Topic) => {
+  const handleOpenEdit = (t: any) => {
     setEditingTopic(t)
-    setTargetParentId(t.parentId)
+    setTargetParentId(t.parent_id)
     setTopicName(t.name)
-    setTopicCode(t.code || '')
-    setPriority(t.priority)
+    setPriority(t.priority || 'medium')
     setIsModalOpen(true)
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!topicName.trim()) {
-      toast.error('Topic name is required')
-      return
-    }
+    if (!topicName.trim()) return alert('Topic name is required')
 
-    if (editingTopic) {
-      updateTopic(editingTopic.id, {
-        name: topicName,
-        code: topicCode || undefined,
-        priority,
+    try {
+      const method = editingTopic ? 'PUT' : 'POST'
+      const payload = editingTopic
+        ? {
+            id: editingTopic.id,
+            subject_id: selectedSubjectId,
+            parent_id: targetParentId,
+            name: topicName,
+            priority,
+          }
+        : {
+            subject_id: selectedSubjectId,
+            parent_id: targetParentId,
+            name: topicName,
+            priority,
+          }
+
+      const res = await fetch('/api/admin/topics', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
-    } else {
-      addTopic({
-        subjectId: selectedSubjectId,
-        parentId: targetParentId,
-        name: topicName,
-        code: topicCode || undefined,
-        priority,
-      })
+      const json = await res.json()
+      if (json.success) {
+        setIsModalOpen(false)
+        loadData()
+      } else {
+        alert(json.error || 'Failed to save topic')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error saving topic')
     }
-    setIsModalOpen(false)
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`/api/admin/topics?id=${id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        setDeleteConfirmId(null)
+        loadData()
+      } else {
+        alert(json.error || 'Failed to delete topic')
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const parentTopicName = targetParentId
     ? topics.find((t) => t.id === targetParentId)?.name
     : null
 
-  const getPriorityBadge = (p: TopicPriority) => {
-    switch (p) {
-      case 'high':
-        return 'bg-black text-white border-black'
-      case 'medium':
-        return 'bg-gray-100 text-gray-800 border-gray-300'
-      case 'low':
-        return 'bg-white text-gray-600 border-gray-200'
-    }
-  }
-
   return (
     <div className="space-y-6">
-      <AdminHeader
-        onToggleMobile={() => setMobileOpen(true)}
-        title="Hierarchical Topic Management"
-        subtitle="Organize multi-level syllabus trees (Subject → Topic → Sub-topic → Micro-topic)"
-      />
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
+          <h1 className="text-2xl font-black text-black tracking-tight">
+            Hierarchical Topic Management
+          </h1>
+          <p className="text-sm text-gray-500">
+            Multi-level syllabus tree structure (Subject → Topic → Sub-topic → Micro-topic).
+          </p>
+        </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 space-y-6 max-w-7xl mx-auto">
-        {/* Subject selector tabs */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-xs">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            {subjects.map((sub) => {
-              const count = topics.filter((t) => t.subjectId === sub.id).length
-              const isSelected = sub.id === selectedSubjectId
+        <button
+          type="button"
+          onClick={() => handleOpenAdd(null)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white text-sm font-semibold transition-colors shadow-xs"
+        >
+          <Icons.Plus size={16} />
+          <span>Add Root Topic</span>
+        </button>
+      </div>
 
-              return (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setSelectedSubjectId(sub.id)}
-                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
-                    isSelected
-                      ? 'bg-black text-white shadow-xs'
-                      : 'text-gray-600 hover:text-black hover:bg-gray-100'
+      {/* Subject Selector Tabs */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-xs">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          {subjects.map((sub) => {
+            const count = topics.filter((t) => t.subject_id === sub.id).length
+            const isSelected = sub.id === selectedSubjectId
+
+            return (
+              <button
+                key={sub.id}
+                type="button"
+                onClick={() => setSelectedSubjectId(sub.id)}
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+                  isSelected
+                    ? 'bg-black text-white shadow-xs'
+                    : 'text-gray-700 hover:text-black hover:bg-gray-100'
+                }`}
+              >
+                <span>{sub.name}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                    isSelected ? 'bg-neutral-800 text-white' : 'bg-gray-100 text-gray-700'
                   }`}
                 >
-                  <span>{sub.name}</span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      isSelected
-                        ? 'bg-gray-800 text-white'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tree controls bar */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative w-full sm:w-80">
+          <Icons.Search
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Search topics in this subject..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black font-medium"
+          />
+        </div>
+        <div className="text-xs font-bold text-gray-500">
+          Showing {filteredTree.length} nodes in {currentSubject?.name}
+        </div>
+      </div>
+
+      {/* Tree Display */}
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
+        <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-xs font-bold text-gray-600 uppercase tracking-wider">
+          <span className="flex items-center gap-2">
+            <Icons.Topics size={16} />
+            {currentSubject?.name} Syllabus Hierarchy
+          </span>
+          <span>Actions</span>
+        </div>
+
+        {loading ? (
+          <div className="p-12 text-center text-sm text-gray-400">Loading topic hierarchy...</div>
+        ) : filteredTree.length === 0 ? (
+          <div className="p-12 text-center text-gray-500 space-y-3">
+            <p className="text-sm font-semibold text-gray-700">No topics added for this subject yet.</p>
+            <button
+              type="button"
+              onClick={() => handleOpenAdd(null)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-black text-white text-xs font-semibold hover:bg-neutral-800"
+            >
+              <Icons.Plus size={14} /> Add First Root Topic
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {filteredTree.map((node) => {
+              const indentPadding = Math.min(node.depth * 28, 140)
+
+              return (
+                <div
+                  key={node.id}
+                  className="p-3.5 sm:p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                  style={{ paddingLeft: `${Math.max(16, indentPadding + 16)}px` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center text-gray-400">
+                      {node.depth > 0 ? (
+                        <span className="text-gray-400 font-mono text-sm mr-1">↳</span>
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full bg-black mr-1.5"></span>
+                      )}
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`text-sm ${
+                            node.depth === 0 ? 'text-black font-extrabold' : 'text-gray-900 font-semibold'
+                          }`}
+                        >
+                          {node.name}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${
+                            node.priority === 'high'
+                              ? 'bg-black text-white border-black'
+                              : 'bg-gray-100 text-gray-700 border-gray-300'
+                          }`}
+                        >
+                          {node.priority} priority
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-gray-500 font-mono">
+                        Level {node.depth + 1} Node • {node.questions_count || 0} Questions Linked
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenAdd(node.id)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-black hover:text-white text-gray-800 text-xs font-semibold transition-colors"
+                      title="Add nested subtopic"
+                    >
+                      <Icons.Plus size={14} />
+                      <span>Add Sub-topic</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEdit(node)}
+                      className="p-1.5 rounded-lg text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+                      title="Edit Topic"
+                    >
+                      <Icons.Edit size={16} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirmId(node.id)}
+                      className="p-1.5 rounded-lg text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+                      title="Delete Topic"
+                    >
+                      <Icons.Trash size={16} />
+                    </button>
+                  </div>
+                </div>
               )
             })}
           </div>
-        </div>
-
-        {/* Tree controls bar */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="relative w-full sm:w-72">
-              <Icons.Search
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Search topics in this subject..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
-              />
-            </div>
-            <span className="text-xs text-gray-500 whitespace-nowrap hidden md:inline">
-              Showing <strong>{filteredTree.length}</strong> topic nodes in {currentSubject?.name}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleOpenAdd(null)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
-          >
-            <Icons.Plus size={18} />
-            <span>Add Root Topic</span>
-          </button>
-        </div>
-
-        {/* Tree Structure Display */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
-          <div className="p-4 bg-gray-50/70 border-b border-gray-200 flex items-center justify-between text-xs font-semibold text-gray-600 uppercase tracking-wider">
-            <span className="flex items-center gap-2">
-              <Icons.Topics size={16} className="text-black" />
-              {currentSubject?.name} Topic Hierarchy
-            </span>
-            <span className="hidden sm:inline">Actions & Sub-Nodes</span>
-          </div>
-
-          {filteredTree.length === 0 ? (
-            <div className="p-12 text-center text-gray-500 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 mx-auto flex items-center justify-center">
-                <Icons.Topics size={20} />
-              </div>
-              <p className="text-sm font-semibold text-gray-700">No topics added for this subject yet.</p>
-              <p className="text-xs text-gray-400">Click "Add Root Topic" to create the initial syllabus branch.</p>
-              <button
-                type="button"
-                onClick={() => handleOpenAdd(null)}
-                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-black text-white text-xs font-semibold hover:bg-gray-800"
-              >
-                <Icons.Plus size={16} /> Add First Root Topic
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {filteredTree.map((node) => {
-                const qCount = questions.filter((q) => q.topicId === node.id).length
-                const indentPadding = Math.min(node.depth * 28, 140)
-
-                return (
-                  <div
-                    key={node.id}
-                    className="p-3.5 sm:p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
-                    style={{ paddingLeft: `${Math.max(16, indentPadding + 16)}px` }}
-                  >
-                    {/* Node title & depth indicator */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center text-gray-400">
-                        {node.depth > 0 ? (
-                          <span className="text-gray-300 font-mono text-sm mr-1">↳</span>
-                        ) : (
-                          <span className="w-2 h-2 rounded-full bg-black mr-1.5"></span>
-                        )}
-                      </div>
-
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-sm font-semibold ${node.depth === 0 ? 'text-gray-900 font-bold' : 'text-gray-800'}`}>
-                            {node.name}
-                          </span>
-                          {node.code && (
-                            <span className="text-[10px] font-mono px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                              {node.code}
-                            </span>
-                          )}
-                          <span
-                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase ${getPriorityBadge(
-                              node.priority
-                            )}`}
-                          >
-                            {node.priority} priority
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-gray-400 font-mono">
-                          Level {node.depth + 1} Node • {qCount} Questions Attached
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions: Add child subtopic, Edit, Delete */}
-                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenAdd(node.id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-black hover:text-white text-gray-700 text-xs font-semibold transition-colors"
-                        title="Add child subtopic under this topic"
-                      >
-                        <Icons.Plus size={14} />
-                        <span>Add Sub-topic</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(node)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-black hover:bg-gray-100 transition-colors"
-                        title="Edit Topic"
-                      >
-                        <Icons.Edit size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirmId(node.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Delete Topic"
-                      >
-                        <Icons.Trash size={16} />
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Add / Edit Topic Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingTopic ? 'Edit Topic' : parentTopicName ? `Add Sub-topic under "${parentTopicName}"` : `Add Root Topic for ${currentSubject?.name}`}
+        title={
+          editingTopic
+            ? 'Edit Topic'
+            : parentTopicName
+            ? `Add Sub-topic under "${parentTopicName}"`
+            : `Add Root Topic for ${currentSubject?.name}`
+        }
         subtitle="Manage hierarchical topic properties"
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
               Topic Name *
             </label>
             <input
@@ -307,34 +347,21 @@ export default function TopicsPage() {
               required
               value={topicName}
               onChange={(e) => setTopicName(e.target.value)}
-              placeholder="e.g. Blood Relation, Direct Relationship, Divisibility"
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              placeholder="e.g. Blood Relation, Direct Relationship, CPU Architecture"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Topic Code (Optional)
-            </label>
-            <input
-              type="text"
-              value={topicCode}
-              onChange={(e) => setTopicCode(e.target.value)}
-              placeholder="e.g. REA-BR-01"
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Priority Level
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+              Exam Weightage Priority
             </label>
             <select
               value={priority}
-              onChange={(e) => setPriority(e.target.value as TopicPriority)}
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+              onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black bg-white font-medium"
             >
-              <option value="high">High Priority (Frequent in government exams)</option>
+              <option value="high">High Priority (High frequency in government exams)</option>
               <option value="medium">Medium Priority</option>
               <option value="low">Low Priority</option>
             </select>
@@ -344,13 +371,13 @@ export default function TopicsPage() {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs transition-colors"
             >
               {editingTopic ? 'Update Topic' : 'Create Topic'}
             </button>
@@ -368,27 +395,22 @@ export default function TopicsPage() {
       >
         <div className="space-y-4">
           <p className="text-xs text-gray-600 leading-relaxed">
-            Deleting this topic will also remove any nested sub-topics below it. Questions will be unlinked.
+            Deleting this topic node will delete its children subtopics and decouple associated questions. This action is permanent.
           </p>
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setDeleteConfirmId(null)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (deleteConfirmId) {
-                  deleteTopic(deleteConfirmId)
-                  setDeleteConfirmId(null)
-                }
-              }}
-              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors"
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+              className="px-4 py-2 rounded-xl bg-black hover:bg-neutral-800 text-white text-xs font-semibold transition-colors"
             >
-              Delete Topic
+              Confirm Delete
             </button>
           </div>
         </div>
@@ -396,4 +418,3 @@ export default function TopicsPage() {
     </div>
   )
 }
-

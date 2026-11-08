@@ -1,21 +1,16 @@
 'use client'
 
-import React, { useState } from 'react'
-import AdminHeader from '@/components/admin/AdminHeader'
+import React, { useEffect, useState } from 'react'
 import Modal from '@/components/admin/Modal'
 import { Icons } from '@/components/admin/Icons'
-import { useExamStore } from '@/lib/store'
-import { Subject } from '@/lib/exam-types'
-import { toast } from 'sonner'
 
 export default function SubjectsPage() {
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingSubject, setEditingSubject] = useState<Subject | null>(null)
+  const [editingSubject, setEditingSubject] = useState<any>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
-
-  const { subjects, addSubject, updateSubject, deleteSubject, questions, topics } = useExamStore()
 
   // Form state
   const [name, setName] = useState('')
@@ -23,198 +18,215 @@ export default function SubjectsPage() {
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
 
+  const fetchSubjects = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/admin/subjects')
+      const json = await res.json()
+      if (json.success) {
+        setSubjects(json.subjects)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchSubjects()
+  }, [])
+
   const filteredSubjects = subjects.filter(
     (s) =>
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.code.toLowerCase().includes(search.toLowerCase()) ||
-      s.description.toLowerCase().includes(search.toLowerCase())
+      (s.description || '').toLowerCase().includes(search.toLowerCase())
   )
 
   const handleOpenAdd = () => {
     setEditingSubject(null)
     setName('')
-    setCode(`SUB-0${subjects.length + 1}`)
+    setCode(`SUB_0${subjects.length + 1}`)
     setDescription('')
     setStatus('active')
     setIsModalOpen(true)
   }
 
-  const handleOpenEdit = (sub: Subject) => {
+  const handleOpenEdit = (sub: any) => {
     setEditingSubject(sub)
     setName(sub.name)
     setCode(sub.code)
-    setDescription(sub.description)
+    setDescription(sub.description || '')
     setStatus(sub.status)
     setIsModalOpen(true)
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) {
-      toast.error('Subject name is required')
-      return
-    }
-    if (!code.trim()) {
-      toast.error('Subject code is required')
-      return
-    }
+    if (!name.trim()) return alert('Subject name is required')
+    if (!code.trim()) return alert('Subject code is required')
 
-    if (editingSubject) {
-      updateSubject(editingSubject.id, {
-        name,
-        code,
-        description,
-        status,
+    try {
+      const method = editingSubject ? 'PUT' : 'POST'
+      const payload = editingSubject
+        ? { id: editingSubject.id, name, code, description, status }
+        : { name, code, description, status }
+
+      const res = await fetch('/api/admin/subjects', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
-    } else {
-      addSubject({
-        name,
-        code,
-        description,
-        icon: 'book',
-        status,
-      })
+      const json = await res.json()
+      if (json.success) {
+        setIsModalOpen(false)
+        fetchSubjects()
+      } else {
+        alert(json.error || 'Failed to save subject')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error saving subject')
     }
-    setIsModalOpen(false)
   }
 
-  const handleDelete = (id: number) => {
-    deleteSubject(id)
-    setDeleteConfirmId(null)
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`/api/admin/subjects?id=${id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        setDeleteConfirmId(null)
+        fetchSubjects()
+      } else {
+        alert(json.error || 'Failed to delete subject')
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
     <div className="space-y-6">
-      <AdminHeader
-        onToggleMobile={() => setMobileOpen(true)}
-        title="Subject Management"
-        subtitle="Configure and organize government exam syllabus subjects"
-      />
-
-      <div className="px-4 sm:px-6 lg:px-8 space-y-6 max-w-7xl mx-auto">
-        {/* Action bar: Search & Add button */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="relative w-full sm:w-80">
-            <Icons.Search
-              size={18}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Search subjects by name or code..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
-          >
-            <Icons.Plus size={18} />
-            <span>Add New Subject</span>
-          </button>
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
+          <h1 className="text-2xl font-black text-black tracking-tight">Subject Management</h1>
+          <p className="text-sm text-gray-500">
+            Configure Rajasthan Informatics Assistant exam syllabus subjects and view question counts.
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={handleOpenAdd}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white text-sm font-semibold transition-colors shadow-xs"
+        >
+          <Icons.Plus size={16} />
+          <span>Add Subject</span>
+        </button>
+      </div>
 
-        {/* Subjects Grid */}
+      {/* Action bar: Search */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex items-center justify-between">
+        <div className="relative w-full sm:w-96">
+          <Icons.Search
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Search subjects by name or code..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black font-medium"
+          />
+        </div>
+        <div className="text-xs font-bold text-gray-500">
+          Total: {filteredSubjects.length} subjects
+        </div>
+      </div>
+
+      {/* Subjects Grid */}
+      {loading ? (
+        <div className="py-16 text-center text-sm text-gray-400 font-medium">Loading subjects from database...</div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredSubjects.map((sub) => {
-            const qCount = questions.filter((q) => q.subjectId === sub.id).length
-            const tCount = topics.filter((t) => t.subjectId === sub.id).length
-
-            return (
-              <div
-                key={sub.id}
-                className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 text-black border border-gray-200 flex items-center justify-center font-bold text-lg">
-                      <Icons.Subjects size={22} />
-                    </div>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                        sub.status === 'active'
-                          ? 'bg-black text-white'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {sub.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
+          {filteredSubjects.map((sub) => (
+            <div
+              key={sub.id}
+              className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:border-black transition-all flex flex-col justify-between group"
+            >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center font-black text-sm">
+                    {sub.code ? sub.code.substring(0, 3) : 'SUB'}
                   </div>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      sub.status === 'active'
+                        ? 'bg-black text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {sub.status}
+                  </span>
+                </div>
 
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-black transition-colors">
-                      {sub.name}
-                    </h3>
-                    <p className="text-xs font-mono font-medium text-gray-500 mt-0.5">
-                      {sub.code}
-                    </p>
-                  </div>
-
-                  <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                    {sub.description}
+                <div>
+                  <h3 className="text-base font-extrabold text-black group-hover:text-black transition-colors">
+                    {sub.name}
+                  </h3>
+                  <p className="text-xs font-mono font-bold text-gray-500 mt-0.5">
+                    {sub.code}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3 font-medium text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <strong className="text-gray-900 font-bold">{tCount}</strong> Topics
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <strong className="text-gray-900 font-bold">{qCount}</strong> Questions
-                    </span>
-                  </div>
+                <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                  {sub.description || 'Core syllabus module for Rajasthan IA exam preparation.'}
+                </p>
+              </div>
 
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(sub)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-black hover:bg-gray-100 transition-colors"
-                      title="Edit Subject"
-                    >
-                      <Icons.Edit size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteConfirmId(sub.id)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Delete Subject"
-                    >
-                      <Icons.Trash size={16} />
-                    </button>
-                  </div>
+              <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-3 font-semibold text-gray-600">
+                  <span><strong>{sub.topics_count || 0}</strong> Topics</span>
+                  <span>•</span>
+                  <span><strong>{sub.questions_count || 0}</strong> Questions</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(sub)}
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+                    title="Edit Subject"
+                  >
+                    <Icons.Edit size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirmId(sub.id)}
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+                    title="Delete Subject"
+                  >
+                    <Icons.Trash size={16} />
+                  </button>
                 </div>
               </div>
-            )
-          })}
-        </div>
-
-        {filteredSubjects.length === 0 && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 space-y-3">
-            <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 mx-auto flex items-center justify-center">
-              <Icons.Search size={20} />
             </div>
-            <p className="text-sm font-semibold text-gray-700">No subjects found matching "{search}"</p>
-            <p className="text-xs text-gray-400">Try modifying your search term or add a new subject.</p>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add / Edit Subject Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingSubject ? 'Edit Subject' : 'Add New Subject'}
-        subtitle="Manage exam syllabus subject details"
+        subtitle="Manage exam syllabus subject details in MySQL"
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
               Subject Name *
             </label>
             <input
@@ -222,13 +234,13 @@ export default function SubjectsPage() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Reasoning, Mathematics, General Knowledge"
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              placeholder="e.g. Computer Science, Reasoning, Hindi"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
               Subject Code *
             </label>
             <input
@@ -236,13 +248,13 @@ export default function SubjectsPage() {
               required
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="e.g. REA-01, MTH-02"
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono"
+              placeholder="e.g. COMPUTER, REASONING"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black font-mono font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
               Description
             </label>
             <textarea
@@ -250,18 +262,18 @@ export default function SubjectsPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of the topics covered in this subject..."
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
               Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')}
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black bg-white font-medium"
             >
               <option value="active">Active (Visible in Question Bank & Tests)</option>
               <option value="inactive">Inactive</option>
@@ -272,13 +284,13 @@ export default function SubjectsPage() {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs transition-colors"
             >
               {editingSubject ? 'Update Subject' : 'Create Subject'}
             </button>
@@ -291,27 +303,27 @@ export default function SubjectsPage() {
         isOpen={deleteConfirmId !== null}
         onClose={() => setDeleteConfirmId(null)}
         title="Delete Subject"
-        subtitle="Are you sure you want to delete this subject?"
+        subtitle="Confirm subject removal"
         maxWidth="sm"
       >
         <div className="space-y-4">
           <p className="text-xs text-gray-600">
-            Deleting this subject will remove its associated topic configurations. This action cannot be undone.
+            Deleting this subject will remove its database entry and linked topics. This action cannot be undone.
           </p>
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setDeleteConfirmId(null)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
-              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors"
+              className="px-4 py-2 rounded-xl bg-black hover:bg-neutral-800 text-white text-xs font-semibold transition-colors"
             >
-              Delete
+              Confirm Delete
             </button>
           </div>
         </div>
@@ -319,4 +331,3 @@ export default function SubjectsPage() {
     </div>
   )
 }
-

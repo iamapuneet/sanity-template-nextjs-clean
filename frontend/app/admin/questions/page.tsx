@@ -2,26 +2,16 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import AdminHeader from '@/components/admin/AdminHeader'
 import Modal from '@/components/admin/Modal'
 import { Icons } from '@/components/admin/Icons'
-import { useExamStore } from '@/lib/store'
-import { Question, QuestionOption, DifficultyLevel, ApprovalStatus } from '@/lib/exam-types'
-import { toast } from 'sonner'
 
 function QuestionsContent() {
   const searchParams = useSearchParams()
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const {
-    subjects,
-    topics,
-    questions,
-    addQuestion,
-    updateQuestion,
-    deleteQuestion,
-    approveQuestion,
-    rejectQuestion,
-  } = useExamStore()
+
+  const [questions, setQuestions] = useState<any[]>([])
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [topics, setTopics] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   // Filter states
   const [search, setSearch] = useState('')
@@ -29,57 +19,96 @@ function QuestionsContent() {
   const [selectedTopic, setSelectedTopic] = useState<string>('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('all')
 
   // Expanded question for detailed view
   const [expandedId, setExpandedId] = useState<number | null>(null)
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
+  const [editingQuestion, setEditingQuestion] = useState<any>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   // Form states
-  const [formSubjectId, setFormSubjectId] = useState<number>(subjects[0]?.id || 1)
-  const [formTopicId, setFormTopicId] = useState<number>(topics[0]?.id || 101)
+  const [formSubjectId, setFormSubjectId] = useState<number | ''>('')
+  const [formTopicId, setFormTopicId] = useState<number | ''>('')
   const [questionText, setQuestionText] = useState('')
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
-  const [status, setStatus] = useState<ApprovalStatus>('pending')
-  const [marks, setMarks] = useState<number>(1.0)
-  const [negativeMarks, setNegativeMarks] = useState<number>(0.25)
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
+  const [status, setStatus] = useState<'draft' | 'pending' | 'approved' | 'rejected'>('approved')
+  const [languageCode, setLanguageCode] = useState<'hi' | 'en'>('hi')
+  const [defaultMarks, setDefaultMarks] = useState<number>(1.0)
+  const [defaultNegativeMarks, setDefaultNegativeMarks] = useState<number>(0.25)
   const [explanation, setExplanation] = useState('')
-  const [options, setOptions] = useState<QuestionOption[]>([
+  const [options, setOptions] = useState([
     { key: 'A', text: '', isCorrect: true },
     { key: 'B', text: '', isCorrect: false },
     { key: 'C', text: '', isCorrect: false },
     { key: 'D', text: '', isCorrect: false },
   ])
 
-  // Check URL query param ?action=new to trigger add modal
+  const fetchQuestions = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (selectedSubject !== 'all') params.append('subject_id', selectedSubject)
+      if (selectedTopic !== 'all') params.append('topic_id', selectedTopic)
+      if (selectedDifficulty !== 'all') params.append('difficulty', selectedDifficulty)
+      if (selectedStatus !== 'all') params.append('status', selectedStatus)
+      if (selectedLanguage !== 'all') params.append('language', selectedLanguage)
+      if (search.trim()) params.append('search', search.trim())
+
+      const res = await fetch(`/api/admin/questions?${params.toString()}`)
+      const json = await res.json()
+      if (json.success) {
+        setQuestions(json.questions)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadFilterData = async () => {
+    try {
+      const [resSubs, resTops] = await Promise.all([
+        fetch('/api/admin/subjects').then((r) => r.json()),
+        fetch('/api/admin/topics').then((r) => r.json()),
+      ])
+      if (resSubs.success) setSubjects(resSubs.subjects)
+      if (resTops.success) setTopics(resTops.topics)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   useEffect(() => {
-    if (searchParams.get('action') === 'new') {
+    loadFilterData()
+  }, [])
+
+  useEffect(() => {
+    fetchQuestions()
+  }, [selectedSubject, selectedTopic, selectedDifficulty, selectedStatus, selectedLanguage])
+
+  // Trigger modal if ?action=new is in query string
+  useEffect(() => {
+    if (searchParams.get('action') === 'new' && subjects.length > 0) {
       handleOpenAdd()
     }
-  }, [searchParams])
-
-  // Available topics for form subject
-  const formAvailableTopics = topics.filter((t) => t.subjectId === formSubjectId)
-
-  // Available topics for filter
-  const filterAvailableTopics =
-    selectedSubject === 'all'
-      ? topics
-      : topics.filter((t) => t.subjectId === Number(selectedSubject))
+  }, [searchParams, subjects])
 
   const handleOpenAdd = () => {
     setEditingQuestion(null)
-    setFormSubjectId(subjects[0]?.id || 1)
-    const initialTopics = topics.filter((t) => t.subjectId === (subjects[0]?.id || 1))
-    setFormTopicId(initialTopics[0]?.id || 101)
+    const firstSubId = subjects[0]?.id || 1
+    setFormSubjectId(firstSubId)
+    const subTopics = topics.filter((t) => t.subject_id === firstSubId)
+    setFormTopicId(subTopics[0]?.id || '')
     setQuestionText('')
     setDifficulty('medium')
-    setStatus('pending')
-    setMarks(1.0)
-    setNegativeMarks(0.25)
+    setStatus('approved')
+    setLanguageCode('hi')
+    setDefaultMarks(1.0)
+    setDefaultNegativeMarks(0.25)
     setExplanation('')
     setOptions([
       { key: 'A', text: '', isCorrect: true },
@@ -90,265 +119,315 @@ function QuestionsContent() {
     setIsModalOpen(true)
   }
 
-  const handleOpenEdit = (q: Question) => {
+  const handleOpenEdit = (q: any) => {
     setEditingQuestion(q)
-    setFormSubjectId(q.subjectId)
-    setFormTopicId(q.topicId)
-    setQuestionText(q.questionText)
-    setDifficulty(q.difficulty)
-    setStatus(q.status)
-    setMarks(q.marks)
-    setNegativeMarks(q.negativeMarks)
-    setExplanation(q.explanation)
-    setOptions(JSON.parse(JSON.stringify(q.options)))
+    setFormSubjectId(q.subject_id)
+    setFormTopicId(q.topic_id)
+    setQuestionText(q.question_text)
+    setDifficulty(q.difficulty || 'medium')
+    setStatus(q.status || 'approved')
+    setLanguageCode(q.language_code || 'en')
+    setDefaultMarks(Number(q.default_marks || 1.0))
+    setDefaultNegativeMarks(Number(q.default_negative_marks || 0.25))
+    setExplanation(q.explanation || '')
+    setOptions(
+      q.options && q.options.length > 0
+        ? q.options.map((o: any) => ({
+            key: o.key,
+            text: o.text,
+            isCorrect: Boolean(o.isCorrect),
+          }))
+        : [
+            { key: 'A', text: '', isCorrect: true },
+            { key: 'B', text: '', isCorrect: false },
+            { key: 'C', text: '', isCorrect: false },
+            { key: 'D', text: '', isCorrect: false },
+          ]
+    )
     setIsModalOpen(true)
   }
 
-  const handleOptionTextChange = (index: number, text: string) => {
+  const handleCorrectOptionChange = (key: string) => {
     setOptions((prev) =>
-      prev.map((opt, i) => (i === index ? { ...opt, text } : opt))
+      prev.map((opt) => ({
+        ...opt,
+        isCorrect: opt.key === key,
+      }))
     )
   }
 
-  const handleCorrectOptionSelect = (index: number) => {
+  const handleOptionTextChange = (key: string, text: string) => {
     setOptions((prev) =>
-      prev.map((opt, i) => ({ ...opt, isCorrect: i === index }))
+      prev.map((opt) => (opt.key === key ? { ...opt, text } : opt))
     )
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!questionText.trim()) {
-      toast.error('Question text is required')
-      return
-    }
-    const hasEmptyOption = options.some((opt) => !opt.text.trim())
-    if (hasEmptyOption) {
-      toast.error('All 4 MCQ options must have text')
-      return
-    }
-    const hasCorrectOption = options.some((opt) => opt.isCorrect)
-    if (!hasCorrectOption) {
-      toast.error('Please select one correct answer')
-      return
+    if (!formSubjectId || !formTopicId || !questionText.trim()) {
+      return alert('Subject, topic, and question text are required.')
     }
 
-    if (editingQuestion) {
-      updateQuestion(editingQuestion.id, {
-        subjectId: formSubjectId,
-        topicId: formTopicId,
-        questionText,
-        options,
-        difficulty,
-        status,
-        marks: Number(marks),
-        negativeMarks: Number(negativeMarks),
-        explanation,
-      })
-    } else {
-      addQuestion({
-        subjectId: formSubjectId,
-        topicId: formTopicId,
-        questionText,
-        options,
-        difficulty,
-        status,
-        marks: Number(marks),
-        negativeMarks: Number(negativeMarks),
-        explanation,
-      })
+    const hasEmptyOption = options.some((o) => !o.text.trim())
+    if (hasEmptyOption) {
+      return alert('All 4 option choices must have text filled in.')
     }
-    setIsModalOpen(false)
+
+    try {
+      const payload = {
+        subject_id: formSubjectId,
+        topic_id: formTopicId,
+        question_text: questionText,
+        difficulty,
+        status,
+        language_code: languageCode,
+        default_marks: defaultMarks,
+        default_negative_marks: defaultNegativeMarks,
+        explanation,
+        options,
+      }
+
+      const method = editingQuestion ? 'PUT' : 'POST'
+      const url = '/api/admin/questions'
+      const body = editingQuestion ? { ...payload, id: editingQuestion.id } : payload
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const json = await res.json()
+
+      if (json.success) {
+        setIsModalOpen(false)
+        fetchQuestions()
+      } else {
+        alert(json.error || 'Failed to save question')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error saving question')
+    }
   }
 
-  // Filter question list
-  const filteredQuestions = questions.filter((q) => {
-    const matchesSearch =
-      q.questionText.toLowerCase().includes(search.toLowerCase()) ||
-      q.explanation.toLowerCase().includes(search.toLowerCase())
-    const matchesSubject =
-      selectedSubject === 'all' || q.subjectId === Number(selectedSubject)
-    const matchesTopic =
-      selectedTopic === 'all' || q.topicId === Number(selectedTopic)
-    const matchesDifficulty =
-      selectedDifficulty === 'all' || q.difficulty === selectedDifficulty
-    const matchesStatus =
-      selectedStatus === 'all' || q.status === selectedStatus
+  const handleUpdateStatus = async (id: number, newStatus: string) => {
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        fetchQuestions()
+      } else {
+        alert(json.error || 'Failed to update status')
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
-    return (
-      matchesSearch &&
-      matchesSubject &&
-      matchesTopic &&
-      matchesDifficulty &&
-      matchesStatus
-    )
-  })
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`/api/admin/questions?id=${id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        setDeleteConfirmId(null)
+        fetchQuestions()
+      } else {
+        alert(json.error || 'Failed to delete question')
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const filterTopics =
+    selectedSubject === 'all'
+      ? topics
+      : topics.filter((t) => t.subject_id === Number(selectedSubject))
+
+  const formTopics =
+    formSubjectId === ''
+      ? []
+      : topics.filter((t) => t.subject_id === Number(formSubjectId))
 
   return (
     <div className="space-y-6">
-      <AdminHeader
-        onToggleMobile={() => setMobileOpen(true)}
-        title="Question Bank Repository"
-        subtitle="Manage, filter, approve, and curate Government Exam Multiple Choice Questions"
-      />
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
+          <h1 className="text-2xl font-black text-black tracking-tight">Question Bank</h1>
+          <p className="text-sm text-gray-500">
+            Curated Rajasthan Informatics Assistant MCQ repository with bilingual support (Hindi & English).
+          </p>
+        </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 space-y-6 max-w-7xl mx-auto">
-        {/* Action bar with search & add */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="relative w-full sm:w-96">
-              <Icons.Search
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Search questions by keyword or formula..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
-              />
-            </div>
+        <button
+          type="button"
+          onClick={handleOpenAdd}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white text-sm font-semibold transition-colors shadow-xs"
+        >
+          <Icons.Plus size={16} />
+          <span>Add New Question</span>
+        </button>
+      </div>
 
-            <button
-              type="button"
-              onClick={handleOpenAdd}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
-            >
-              <Icons.Plus size={18} />
-              <span>Create Question</span>
-            </button>
+      {/* Filters Bar */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* Search */}
+          <div className="lg:col-span-2 relative">
+            <Icons.Search
+              size={18}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              placeholder="Search question statement or explanation..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && fetchQuestions()}
+              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-black font-medium"
+            />
           </div>
 
-          {/* Filter dropdowns */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100 text-xs">
-            {/* Subject filter */}
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
-                Subject
-              </label>
-              <select
-                value={selectedSubject}
-                onChange={(e) => {
-                  setSelectedSubject(e.target.value)
-                  setSelectedTopic('all')
-                }}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="all">All Subjects ({questions.length})</option>
-                {subjects.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Subject Filter */}
+          <div>
+            <select
+              value={selectedSubject}
+              onChange={(e) => {
+                setSelectedSubject(e.target.value)
+                setSelectedTopic('all')
+              }}
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-semibold text-gray-800"
+            >
+              <option value="all">All Subjects</option>
+              {subjects.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {/* Topic filter */}
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
-                Topic
-              </label>
-              <select
-                value={selectedTopic}
-                onChange={(e) => setSelectedTopic(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="all">All Topics</option>
-                {filterAvailableTopics.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Topic Filter */}
+          <div>
+            <select
+              value={selectedTopic}
+              onChange={(e) => setSelectedTopic(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-semibold text-gray-800"
+            >
+              <option value="all">All Topics</option>
+              {filterTopics.map((top) => (
+                <option key={top.id} value={top.id}>
+                  {top.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {/* Difficulty filter */}
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
-                Difficulty
-              </label>
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="all">All Difficulties</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
+          {/* Difficulty Filter */}
+          <div>
+            <select
+              value={selectedDifficulty}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-semibold text-gray-800"
+            >
+              <option value="all">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
 
-            {/* Status filter */}
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
-                Approval Status
-              </label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="all">All Statuses</option>
-                <option value="approved">Approved</option>
-                <option value="pending">Pending</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
+          {/* Language Filter */}
+          <div>
+            <select
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-semibold text-gray-800"
+            >
+              <option value="all">All Languages</option>
+              <option value="hi">Hindi (हिंदी)</option>
+              <option value="en">English</option>
+            </select>
           </div>
         </div>
 
-        {/* Question Cards List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-gray-500 px-1">
-            <span>
-              Showing <strong>{filteredQuestions.length}</strong> questions
-            </span>
-            <span>Click any question to view options & explanation</span>
+        {/* Status Pills */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 font-bold uppercase text-[10px]">Status:</span>
+            {['all', 'approved', 'pending', 'rejected'].map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setSelectedStatus(st)}
+                className={`px-2.5 py-1 rounded-lg font-bold uppercase text-[10px] transition-colors ${
+                  selectedStatus === st
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
           </div>
+          <div className="font-bold text-gray-600">{questions.length} questions loaded</div>
+        </div>
+      </div>
 
-          {filteredQuestions.map((q) => {
+      {/* Questions List */}
+      {loading ? (
+        <div className="py-16 text-center text-sm text-gray-400 font-medium">Loading question bank...</div>
+      ) : questions.length === 0 ? (
+        <div className="p-12 text-center text-gray-500 bg-white rounded-2xl border border-gray-200 space-y-3">
+          <p className="text-sm font-semibold text-gray-700">No questions found matching your filter criteria.</p>
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-black text-white text-xs font-semibold hover:bg-neutral-800"
+          >
+            <Icons.Plus size={14} /> Add First Question
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {questions.map((q) => {
             const isExpanded = expandedId === q.id
-            const sub = subjects.find((s) => s.id === q.subjectId)
-            const top = topics.find((t) => t.id === q.topicId)
+            const isApproved = q.status === 'approved'
 
             return (
               <div
                 key={q.id}
-                className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:border-gray-900 transition-all space-y-4"
+                className="p-5 rounded-2xl bg-white border border-gray-200 hover:border-black transition-all shadow-xs"
               >
-                {/* Header row: Subject, Topic, Difficulty, Status */}
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-wrap text-xs">
-                    <span className="font-bold text-black bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg">
-                      {sub?.name || 'General'}
-                    </span>
-                    <span className="text-gray-400">›</span>
-                    <span className="font-medium text-gray-700 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg">
-                      {top?.name || 'General Topic'}
-                    </span>
-                    <span
-                      className={`font-semibold uppercase text-[10px] px-2 py-0.5 rounded-full ${
-                        q.difficulty === 'hard'
-                          ? 'bg-black text-white'
-                          : q.difficulty === 'medium'
-                          ? 'bg-gray-200 text-gray-800'
-                          : 'bg-gray-100 text-gray-700 border border-gray-300'
-                      }`}
-                    >
-                      {q.difficulty}
-                    </span>
+                {/* Meta Header */}
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-black text-black">Q#{q.id}</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-xs font-bold text-gray-800">{q.subject_name}</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-xs text-gray-500">{q.topic_name}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-100 text-black border border-gray-200">
+                      {q.language_code === 'hi' ? 'हिंदी (HI)' : 'ENG (EN)'}
+                    </span>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
+                      {q.difficulty}
+                    </span>
                     <span
-                      className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase ${
+                      className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full ${
                         q.status === 'approved'
                           ? 'bg-black text-white'
                           : q.status === 'pending'
-                          ? 'bg-gray-100 text-gray-800 border border-gray-300'
-                          : 'bg-rose-100 text-rose-800 border border-rose-200'
+                          ? 'bg-neutral-200 text-black'
+                          : 'bg-neutral-100 text-neutral-500'
                       }`}
                     >
                       {q.status}
@@ -356,109 +435,97 @@ function QuestionsContent() {
                   </div>
                 </div>
 
-                {/* Question Text */}
-                <div
-                  className="cursor-pointer"
-                  onClick={() => setExpandedId(isExpanded ? null : q.id)}
-                >
-                  <p className="text-sm sm:text-base font-semibold text-gray-900 leading-relaxed">
-                    {q.questionText}
-                  </p>
-                  <div className="mt-2 text-xs text-gray-400 flex items-center gap-3">
-                    <span>Marks: +{q.marks}</span>
-                    <span>•</span>
-                    <span>Negative: -{q.negativeMarks}</span>
-                    <span>•</span>
-                    <span>Added: {q.createdAt}</span>
-                    <span className="text-black font-bold ml-auto flex items-center gap-1 hover:underline">
-                      {isExpanded ? 'Collapse' : 'Show Options'}
-                      <Icons.ChevronDown
-                        size={14}
-                        className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                      />
-                    </span>
-                  </div>
-                </div>
+                {/* Question Statement */}
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 leading-relaxed mb-4">
+                  {q.question_text}
+                </h3>
 
-                {/* Collapsible Options & Explanation Section */}
-                {isExpanded && (
-                  <div className="pt-4 border-t border-gray-100 space-y-4 animate-in fade-in duration-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {q.options.map((opt) => (
-                        <div
-                          key={opt.key}
-                          className={`p-3 rounded-xl border text-xs sm:text-sm flex items-start gap-3 transition-colors ${
-                            opt.isCorrect
-                              ? 'bg-black text-white border-black font-medium ring-1 ring-black'
-                              : 'bg-gray-50 border-gray-200 text-gray-800'
+                {/* Options Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4">
+                  {q.options?.map((opt: any) => (
+                    <div
+                      key={opt.key}
+                      className={`p-3 rounded-xl border text-xs font-medium flex items-center justify-between ${
+                        opt.isCorrect
+                          ? 'bg-neutral-100 border-black text-black font-bold'
+                          : 'bg-white border-gray-200 text-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] ${
+                            opt.isCorrect ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          <span
-                            className={`w-6 h-6 rounded-lg font-bold flex items-center justify-center shrink-0 text-xs ${
-                              opt.isCorrect
-                                ? 'bg-white text-black'
-                                : 'bg-gray-200 text-gray-800'
-                            }`}
-                          >
-                            {opt.key}
-                          </span>
-                          <span className="flex-1 mt-0.5">{opt.text}</span>
-                          {opt.isCorrect && (
-                            <span className="text-[10px] font-bold text-black uppercase bg-white px-2 py-0.5 rounded-md shrink-0">
-                              Correct Answer
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {q.explanation && (
-                      <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs space-y-1">
-                        <span className="font-bold text-gray-900 block">Explanation:</span>
-                        <p className="text-gray-700 leading-relaxed">{q.explanation}</p>
+                          {opt.key}
+                        </span>
+                        <span>{opt.text}</span>
                       </div>
-                    )}
+                      {opt.isCorrect && (
+                        <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-black text-white">
+                          Correct
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Explanation accordion */}
+                {isExpanded && q.explanation && (
+                  <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 mb-4 space-y-1">
+                    <span className="font-bold text-black uppercase text-[10px] block">
+                      Explanation / व्याख्या:
+                    </span>
+                    <p className="leading-relaxed">{q.explanation}</p>
                   </div>
                 )}
 
-                {/* Card footer actions */}
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {q.status !== 'approved' && (
-                      <button
-                        type="button"
-                        onClick={() => approveQuestion(q.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-gray-800 text-white text-xs font-semibold transition-colors"
-                      >
-                        <Icons.Check size={14} />
-                        <span>Approve Question</span>
-                      </button>
-                    )}
-                    {q.status !== 'rejected' && (
-                      <button
-                        type="button"
-                        onClick={() => rejectQuestion(q.id)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs font-medium transition-colors"
-                      >
-                        <Icons.Close size={14} />
-                        <span>Reject</span>
-                      </button>
-                    )}
-                  </div>
+                {/* Actions Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-100 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(isExpanded ? null : q.id)}
+                    className="text-gray-600 hover:text-black font-semibold flex items-center gap-1"
+                  >
+                    <span>{isExpanded ? 'Hide Explanation' : 'View Explanation'}</span>
+                    <Icons.ChevronDown
+                      size={14}
+                      className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
+                    {!isApproved ? (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(q.id, 'approved')}
+                        className="px-3 py-1.5 rounded-lg bg-black hover:bg-neutral-800 text-white font-semibold text-xs transition-colors"
+                      >
+                        Approve Question
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(q.id, 'pending')}
+                        className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs transition-colors"
+                      >
+                        Mark Pending
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(q)}
-                      className="p-2 rounded-lg text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+                      className="p-1.5 rounded-lg text-gray-600 hover:text-black hover:bg-gray-100 transition-colors"
                       title="Edit Question"
                     >
                       <Icons.Edit size={16} />
                     </button>
+
                     <button
                       type="button"
                       onClick={() => setDeleteConfirmId(q.id)}
-                      className="p-2 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      className="p-1.5 rounded-lg text-gray-600 hover:text-black hover:bg-gray-100 transition-colors"
                       title="Delete Question"
                     >
                       <Icons.Trash size={16} />
@@ -468,45 +535,34 @@ function QuestionsContent() {
               </div>
             )
           })}
-
-          {filteredQuestions.length === 0 && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 mx-auto flex items-center justify-center">
-                <Icons.Questions size={20} />
-              </div>
-              <p className="text-sm font-semibold text-gray-700">No questions found matching your filter criteria.</p>
-              <p className="text-xs text-gray-400">Try resetting filters or adding a new MCQ question.</p>
-            </div>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Add / Edit Question Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingQuestion ? 'Edit MCQ Question' : 'Create New MCQ Question'}
-        subtitle="Specify question content, 4 options, correct answer, and explanation"
+        title={editingQuestion ? 'Edit Question' : 'Add Question to Bank'}
+        subtitle="Specify question statement, options, correct answer, and explanation"
         maxWidth="2xl"
       >
-        <form onSubmit={handleSave} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
-          {/* Subject & Topic Selectors */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Subject */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                 Subject *
               </label>
               <select
+                required
                 value={formSubjectId}
                 onChange={(e) => {
-                  const newSubId = Number(e.target.value)
-                  setFormSubjectId(newSubId)
-                  const subTopics = topics.filter((t) => t.subjectId === newSubId)
-                  if (subTopics.length > 0) {
-                    setFormTopicId(subTopics[0].id)
-                  }
+                  const sId = Number(e.target.value)
+                  setFormSubjectId(sId)
+                  const subTopics = topics.filter((t) => t.subject_id === sId)
+                  setFormTopicId(subTopics[0]?.id || '')
                 }}
-                className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-medium"
               >
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -516,61 +572,76 @@ function QuestionsContent() {
               </select>
             </div>
 
+            {/* Topic */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                 Topic *
               </label>
               <select
+                required
                 value={formTopicId}
                 onChange={(e) => setFormTopicId(Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-medium"
               >
-                {formAvailableTopics.map((t) => (
+                {formTopics.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
                   </option>
                 ))}
               </select>
             </div>
+
+            {/* Language */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                Language *
+              </label>
+              <select
+                value={languageCode}
+                onChange={(e) => setLanguageCode(e.target.value as 'hi' | 'en')}
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-medium"
+              >
+                <option value="hi">Hindi (हिंदी)</option>
+                <option value="en">English</option>
+              </select>
+            </div>
           </div>
 
           {/* Question Text */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Question Text *
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+              Question Statement *
             </label>
             <textarea
-              rows={3}
               required
+              rows={3}
               value={questionText}
               onChange={(e) => setQuestionText(e.target.value)}
-              placeholder="Enter question statement clearly..."
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              placeholder="Enter the full question text here..."
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-black font-medium"
             />
           </div>
 
-          {/* 4 Options with Radio Button */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-gray-700">
-              Multiple Choice Options (Select the correct answer) *
+          {/* 4 MCQ Options */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+              4 Selectable Options (Radio Select Correct Answer) *
             </label>
             <div className="space-y-2">
-              {options.map((opt, idx) => (
+              {options.map((opt) => (
                 <div
                   key={opt.key}
-                  className={`flex items-center gap-3 p-2.5 rounded-xl border transition-colors ${
-                    opt.isCorrect
-                      ? 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500'
-                      : 'border-gray-200 bg-gray-50/50'
+                  className={`flex items-center gap-3 p-2 rounded-xl border ${
+                    opt.isCorrect ? 'border-black bg-neutral-50' : 'border-gray-200'
                   }`}
                 >
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-gray-700 pl-1">
+                  <label className="flex items-center gap-1.5 cursor-pointer shrink-0 font-bold text-xs">
                     <input
                       type="radio"
-                      name="correctOption"
+                      name="correct_option"
                       checked={opt.isCorrect}
-                      onChange={() => handleCorrectOptionSelect(idx)}
-                      className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      onChange={() => handleCorrectOptionChange(opt.key)}
+                      className="accent-black w-4 h-4 cursor-pointer"
                     />
                     <span>Option {opt.key}</span>
                   </label>
@@ -578,30 +649,25 @@ function QuestionsContent() {
                     type="text"
                     required
                     value={opt.text}
-                    onChange={(e) => handleOptionTextChange(idx, e.target.value)}
-                    placeholder={`Enter text for option ${opt.key}...`}
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                    onChange={(e) => handleOptionTextChange(opt.key, e.target.value)}
+                    placeholder={`Enter text for Option ${opt.key}...`}
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-black"
                   />
-                  {opt.isCorrect && (
-                    <span className="text-[11px] font-bold text-emerald-700 pr-2">
-                      Correct
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Marks & Difficulty row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Marks & Difficulty */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                 Difficulty
               </label>
               <select
                 value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:outline-none focus:border-black font-medium"
               >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -610,112 +676,90 @@ function QuestionsContent() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Marks (+)
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                Positive Marks
               </label>
               <input
                 type="number"
                 step="0.25"
-                min="0"
-                value={marks}
-                onChange={(e) => setMarks(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
+                value={defaultMarks}
+                onChange={(e) => setDefaultMarks(parseFloat(e.target.value))}
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-black font-mono font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Negative (-)
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                Negative Marks
               </label>
               <input
                 type="number"
                 step="0.05"
-                min="0"
-                value={negativeMarks}
-                onChange={(e) => setNegativeMarks(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
+                value={defaultNegativeMarks}
+                onChange={(e) => setDefaultNegativeMarks(parseFloat(e.target.value))}
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-black font-mono font-medium"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as ApprovalStatus)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="approved">Approved</option>
-                <option value="pending">Pending</option>
-                <option value="rejected">Rejected</option>
-              </select>
             </div>
           </div>
 
           {/* Explanation */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Detailed Solution & Explanation
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+              Detailed Solution & Explanation (व्याख्या)
             </label>
             <textarea
-              rows={3}
+              rows={2}
               value={explanation}
               onChange={(e) => setExplanation(e.target.value)}
-              placeholder="Step-by-step reasoning or formula derivation..."
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              placeholder="Step-by-step reasoning or formula breakdown..."
+              className="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-black font-medium"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-200">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs"
             >
-              {editingQuestion ? 'Update Question' : 'Save Question'}
+              {editingQuestion ? 'Update Question' : 'Save to Bank'}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation */}
       <Modal
         isOpen={deleteConfirmId !== null}
         onClose={() => setDeleteConfirmId(null)}
         title="Delete Question"
-        subtitle="Are you sure you want to delete this question?"
+        subtitle="Confirm question removal"
         maxWidth="sm"
       >
         <div className="space-y-4">
-          <p className="text-xs text-gray-600 leading-relaxed">
-            This question will be removed from the question bank repository and excluded from upcoming tests.
+          <p className="text-xs text-gray-600">
+            Are you sure you want to delete this question? It will be removed from future tests.
           </p>
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setDeleteConfirmId(null)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100"
             >
               Cancel
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (deleteConfirmId) {
-                  deleteQuestion(deleteConfirmId)
-                  setDeleteConfirmId(null)
-                }
-              }}
-              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors"
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+              className="px-4 py-2 rounded-xl bg-black hover:bg-neutral-800 text-white text-xs font-semibold"
             >
-              Delete Question
+              Confirm Delete
             </button>
           </div>
         </div>
@@ -726,15 +770,8 @@ function QuestionsContent() {
 
 export default function QuestionsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-8 text-center text-xs text-gray-400">
-          Loading Question Bank...
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="p-8 text-center text-sm text-gray-400">Loading Question Bank...</div>}>
       <QuestionsContent />
     </Suspense>
   )
 }
-
