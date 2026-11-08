@@ -99,11 +99,11 @@ export default function TopicsPage() {
   const getPriorityBadge = (p: TopicPriority) => {
     switch (p) {
       case 'high':
-        return 'bg-rose-50 text-rose-700 border-rose-200'
+        return 'bg-black text-white border-black'
       case 'medium':
-        return 'bg-amber-50 text-amber-700 border-amber-200'
+        return 'bg-gray-100 text-gray-800 border-gray-300'
       case 'low':
-        return 'bg-blue-50 text-blue-700 border-blue-200'
+        return 'bg-white text-gray-600 border-gray-200'
     }
   }
 
@@ -130,15 +130,15 @@ export default function TopicsPage() {
                   onClick={() => setSelectedSubjectId(sub.id)}
                   className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-black text-white shadow-xs'
+                      : 'text-gray-600 hover:text-black hover:bg-gray-100'
                   }`}
                 >
                   <span>{sub.name}</span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                       isSelected
-                        ? 'bg-blue-800 text-white'
+                        ? 'bg-gray-800 text-white'
                         : 'bg-gray-100 text-gray-600'
                     }`}
                   >
@@ -163,7 +163,7 @@ export default function TopicsPage() {
                 placeholder="Search topics in this subject..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
               />
             </div>
             <span className="text-xs text-gray-500 whitespace-nowrap hidden md:inline">
@@ -174,7 +174,7 @@ export default function TopicsPage() {
           <button
             type="button"
             onClick={() => handleOpenAdd(null)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
           >
             <Icons.Plus size={18} />
             <span>Add Root Topic</span>
@@ -185,7 +185,7 @@ export default function TopicsPage() {
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
           <div className="p-4 bg-gray-50/70 border-b border-gray-200 flex items-center justify-between text-xs font-semibold text-gray-600 uppercase tracking-wider">
             <span className="flex items-center gap-2">
-              <Icons.Topics size={16} className="text-blue-600" />
+              <Icons.Topics size={16} className="text-black" />
               {currentSubject?.name} Topic Hierarchy
             </span>
             <span className="hidden sm:inline">Actions & Sub-Nodes</span>
@@ -201,7 +201,7 @@ export default function TopicsPage() {
               <button
                 type="button"
                 onClick={() => handleOpenAdd(null)}
-                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-black text-white text-xs font-semibold hover:bg-gray-800"
               >
                 <Icons.Plus size={16} /> Add First Root Topic
               </button>
@@ -215,7 +215,7 @@ export default function TopicsPage() {
                 return (
                   <div
                     key={node.id}
-                    className="p-3.5 sm:p-4 hover:bg-blue-50/20 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                    className="p-3.5 sm:p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                     style={{ paddingLeft: `${Math.max(16, indentPadding + 16)}px` }}
                   >
                     {/* Node title & depth indicator */}
@@ -224,7 +224,7 @@ export default function TopicsPage() {
                         {node.depth > 0 ? (
                           <span className="text-gray-300 font-mono text-sm mr-1">↳</span>
                         ) : (
-                          <span className="w-2 h-2 rounded-full bg-blue-600 mr-1.5"></span>
+                          <span className="w-2 h-2 rounded-full bg-black mr-1.5"></span>
                         )}
                       </div>
 
@@ -246,7 +246,7 @@ export default function TopicsPage() {
                             {node.priority} priority
                           </span>
                         </div>
-                        <div className="text-[11px] text-gray-400">
+                        <div className="text-[11px] text-gray-400 font-mono">
                           Level {node.depth + 1} Node • {qCount} Questions Attached
                         </div>
                       </div>
@@ -257,7 +257,7 @@ export default function TopicsPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenAdd(node.id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-700 text-xs font-medium transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-black hover:text-white text-gray-700 text-xs font-semibold transition-colors"
                         title="Add child subtopic under this topic"
                       >
                         <Icons.Plus size={14} />
@@ -267,7 +267,7 @@ export default function TopicsPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(node)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-black hover:bg-gray-100 transition-colors"
                         title="Edit Topic"
                       >
                         <Icons.Edit size={16} />
@@ -350,7 +350,7 @@ export default function TopicsPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
             >
               {editingTopic ? 'Update Topic' : 'Create Topic'}
             </button>

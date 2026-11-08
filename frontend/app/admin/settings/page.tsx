@@ -44,11 +44,11 @@ export default function SettingsPage() {
 
       <div className="px-4 sm:px-6 lg:px-8 space-y-6 max-w-4xl mx-auto">
         {/* Scope Restriction Info Box */}
-        <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-3">
-          <Icons.Shield size={20} className="text-blue-600 shrink-0 mt-0.5" />
+        <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-gray-900 flex items-start gap-3">
+          <Icons.Shield size={20} className="text-black shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold">Strict Architecture Scope:</span>
-            <p className="leading-relaxed text-blue-800">
+            <span className="font-bold text-black">Strict Architecture Scope:</span>
+            <p className="leading-relaxed text-gray-700">
               ExamForge is focused strictly on verified manual MCQ question banking, hierarchical syllabus mapping, and authenticated student practice. AI generation and external forms export are completely disabled by architectural mandate.
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function SettingsPage() {
             <div className="pt-4 border-t border-gray-100 flex justify-end">
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors"
               >
                 Save Branding
               </button>

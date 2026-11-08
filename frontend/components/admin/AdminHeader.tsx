@@ -49,7 +49,7 @@ export default function AdminHeader({
         {/* Question Bank fast button */}
         <Link
           href="/admin/questions?action=new"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors shadow-xs"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-gray-800 text-white text-xs font-semibold transition-colors shadow-xs"
         >
           <Icons.Plus size={16} />
           <span>New Question</span>

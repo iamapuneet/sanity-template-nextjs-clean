@@ -104,14 +104,14 @@ export default function SubjectsPage() {
               placeholder="Search subjects by name or code..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
             />
           </div>
 
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
           >
             <Icons.Plus size={18} />
             <span>Add New Subject</span>
@@ -131,13 +131,13 @@ export default function SubjectsPage() {
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">
+                    <div className="w-12 h-12 rounded-xl bg-gray-100 text-black border border-gray-200 flex items-center justify-center font-bold text-lg">
                       <Icons.Subjects size={22} />
                     </div>
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         sub.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          ? 'bg-black text-white'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
@@ -146,10 +146,10 @@ export default function SubjectsPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-black transition-colors">
                       {sub.name}
                     </h3>
-                    <p className="text-xs font-mono font-medium text-blue-600 mt-0.5">
+                    <p className="text-xs font-mono font-medium text-gray-500 mt-0.5">
                       {sub.code}
                     </p>
                   </div>
@@ -174,7 +174,7 @@ export default function SubjectsPage() {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(sub)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-black hover:bg-gray-100 transition-colors"
                       title="Edit Subject"
                     >
                       <Icons.Edit size={16} />
@@ -278,7 +278,7 @@ export default function SubjectsPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
             >
               {editingSubject ? 'Update Subject' : 'Create Subject'}
             </button>

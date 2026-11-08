@@ -136,7 +136,7 @@ function PracticeTestsContent() {
           <button
             type="button"
             onClick={handleOpenCreate}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
           >
             <Icons.Plus size={18} />
             <span>Build New Practice Test</span>
@@ -155,13 +155,13 @@ function PracticeTestsContent() {
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
-                    <span className="font-bold text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
+                    <span className="font-bold text-xs px-2.5 py-1 rounded-full bg-gray-100 text-black border border-gray-200">
                       {sub?.name || 'Full Syllabus Mock'}
                     </span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
                         test.status === 'published'
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-black text-white'
                           : 'bg-gray-100 text-gray-700'
                       }`}
                     >
@@ -189,7 +189,7 @@ function PracticeTestsContent() {
                     </div>
                     <div>
                       <span className="block text-[10px] uppercase font-semibold text-gray-400">Marks</span>
-                      <strong className="text-sm font-bold text-blue-600">{test.totalMarks}</strong>
+                      <strong className="text-sm font-bold text-black">{test.totalMarks}</strong>
                     </div>
                   </div>
                 </div>
@@ -376,17 +376,17 @@ function PracticeTestsContent() {
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => toggleQuestionSelection(q.id)}
-                        className="w-4 h-4 mt-0.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        className="w-4 h-4 mt-0.5 text-black rounded border-gray-300 focus:ring-black cursor-pointer"
                       />
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-blue-700 bg-white px-2 py-0.5 rounded border border-gray-200 text-[10px]">
+                          <span className="font-bold text-black bg-white px-2 py-0.5 rounded border border-gray-200 text-[10px]">
                             {sub?.name || 'General'}
                           </span>
                           <span className="text-[10px] font-mono text-gray-500">
                             Marks: +{q.marks}
                           </span>
-                          <span className="text-[10px] uppercase font-bold text-amber-700">
+                          <span className="text-[10px] uppercase font-bold text-black">
                             {q.difficulty}
                           </span>
                         </div>
@@ -399,12 +399,12 @@ function PracticeTestsContent() {
             </div>
 
             {/* Total calculated marks summary banner */}
-            <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs text-blue-900 font-medium">
+            <div className="p-3.5 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-between text-xs text-black font-medium">
               <span>
                 Selected: <strong>{selectedQuestionIds.length}</strong> questions
               </span>
               <span>
-                Total Marks: <strong className="text-sm font-bold text-blue-700">{calculatedTotalMarks}</strong>
+                Total Marks: <strong className="text-sm font-bold text-black">{calculatedTotalMarks}</strong>
               </span>
             </div>
           </div>
@@ -419,7 +419,7 @@ function PracticeTestsContent() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
             >
               Save & Publish Test
             </button>

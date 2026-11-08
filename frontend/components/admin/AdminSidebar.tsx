@@ -96,15 +96,15 @@ export default function AdminSidebar({
             href="/admin"
             className="flex items-center gap-3 overflow-hidden focus:outline-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center font-bold text-xl shadow-sm shrink-0 border border-gray-900">
               EF
             </div>
             {!collapsed && (
               <div className="flex flex-col">
-                <span className="font-bold text-gray-900 text-lg leading-tight tracking-tight">
+                <span className="font-extrabold text-black text-lg leading-tight tracking-tight">
                   ExamForge
                 </span>
-                <span className="text-[11px] font-medium text-blue-600 uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                   Admin Panel
                 </span>
               </div>
@@ -154,13 +154,13 @@ export default function AdminSidebar({
                 title={collapsed ? item.label : undefined}
                 className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                   active
-                    ? 'bg-blue-50 text-blue-700 shadow-xs'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-black text-white shadow-xs'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-black'
                 }`}
               >
                 <div
                   className={`shrink-0 ${
-                    active ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'
+                    active ? 'text-white' : 'text-gray-500 group-hover:text-black'
                   }`}
                 >
                   <IconComponent size={20} />
@@ -173,9 +173,11 @@ export default function AdminSidebar({
                 {!collapsed && item.badge !== undefined && (
                   <span
                     className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                      item.badgeVariant === 'warning'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-gray-100 text-gray-600'
+                      active
+                        ? 'bg-gray-800 text-gray-200'
+                        : item.badgeVariant === 'warning'
+                        ? 'bg-amber-100 text-amber-900'
+                        : 'bg-gray-100 text-gray-700'
                     }`}
                   >
                     {item.badge}
@@ -193,7 +195,7 @@ export default function AdminSidebar({
               collapsed ? 'justify-center' : ''
             }`}
           >
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
+            <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs shrink-0">
               A
             </div>
             {!collapsed && (

@@ -86,14 +86,14 @@ export default function ResultsPage() {
             value={attempts.length}
             subtitle="Completed Practice Tests"
             icon={<Icons.Results size={22} />}
-            iconBgColor="bg-blue-50 text-blue-600"
+            iconBgColor="bg-gray-100 text-black border border-gray-200"
           />
           <MetricCard
             title="Pass Rate"
             value="100%"
             subtitle="Above Passing Mark"
             icon={<Icons.Award size={22} />}
-            iconBgColor="bg-emerald-50 text-emerald-600"
+            iconBgColor="bg-black text-white"
             trend="High benchmark"
             trendPositive={true}
           />
@@ -102,14 +102,14 @@ export default function ResultsPage() {
             value="70.3%"
             subtitle="Across All Candidates"
             icon={<Icons.CheckCircle size={22} />}
-            iconBgColor="bg-indigo-50 text-indigo-600"
+            iconBgColor="bg-gray-100 text-black border border-gray-200"
           />
           <MetricCard
             title="Active Tests"
             value={tests.length}
             subtitle="Currently Published"
             icon={<Icons.PracticeTests size={22} />}
-            iconBgColor="bg-purple-50 text-purple-600"
+            iconBgColor="bg-gray-100 text-black border border-gray-200"
           />
         </div>
 
@@ -163,7 +163,7 @@ export default function ResultsPage() {
                       </span>{' '}
                       / <span className="text-rose-500">{row.incorrectAnswers} Incorrect</span>
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold font-mono text-blue-700">
+                    <td className="py-3.5 px-4 text-center font-bold font-mono text-black">
                       {row.score} / {row.totalMarks} ({row.percentage}%)
                     </td>
                     <td className="py-3.5 px-4 text-center">

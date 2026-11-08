@@ -206,14 +206,14 @@ function QuestionsContent() {
                 placeholder="Search questions by keyword or formula..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
               />
             </div>
 
             <button
               type="button"
               onClick={handleOpenAdd}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-xs"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-colors shadow-xs"
             >
               <Icons.Plus size={18} />
               <span>Create Question</span>
@@ -316,25 +316,25 @@ function QuestionsContent() {
             return (
               <div
                 key={q.id}
-                className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:border-blue-200 transition-all space-y-4"
+                className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:border-gray-900 transition-all space-y-4"
               >
                 {/* Header row: Subject, Topic, Difficulty, Status */}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap text-xs">
-                    <span className="font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg">
+                    <span className="font-bold text-black bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg">
                       {sub?.name || 'General'}
                     </span>
                     <span className="text-gray-400">›</span>
-                    <span className="font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg">
+                    <span className="font-medium text-gray-700 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg">
                       {top?.name || 'General Topic'}
                     </span>
                     <span
                       className={`font-semibold uppercase text-[10px] px-2 py-0.5 rounded-full ${
                         q.difficulty === 'hard'
-                          ? 'bg-rose-100 text-rose-800'
+                          ? 'bg-black text-white'
                           : q.difficulty === 'medium'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-gray-200 text-gray-800'
+                          : 'bg-gray-100 text-gray-700 border border-gray-300'
                       }`}
                     >
                       {q.difficulty}
@@ -345,9 +345,9 @@ function QuestionsContent() {
                     <span
                       className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase ${
                         q.status === 'approved'
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          ? 'bg-black text-white'
                           : q.status === 'pending'
-                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          ? 'bg-gray-100 text-gray-800 border border-gray-300'
                           : 'bg-rose-100 text-rose-800 border border-rose-200'
                       }`}
                     >
@@ -370,7 +370,7 @@ function QuestionsContent() {
                     <span>Negative: -{q.negativeMarks}</span>
                     <span>•</span>
                     <span>Added: {q.createdAt}</span>
-                    <span className="text-blue-600 font-medium ml-auto flex items-center gap-1">
+                    <span className="text-black font-bold ml-auto flex items-center gap-1 hover:underline">
                       {isExpanded ? 'Collapse' : 'Show Options'}
                       <Icons.ChevronDown
                         size={14}
@@ -389,22 +389,22 @@ function QuestionsContent() {
                           key={opt.key}
                           className={`p-3 rounded-xl border text-xs sm:text-sm flex items-start gap-3 transition-colors ${
                             opt.isCorrect
-                              ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950 font-medium ring-1 ring-emerald-300'
-                              : 'bg-gray-50 border-gray-200 text-gray-700'
+                              ? 'bg-black text-white border-black font-medium ring-1 ring-black'
+                              : 'bg-gray-50 border-gray-200 text-gray-800'
                           }`}
                         >
                           <span
                             className={`w-6 h-6 rounded-lg font-bold flex items-center justify-center shrink-0 text-xs ${
                               opt.isCorrect
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-gray-200 text-gray-700'
+                                ? 'bg-white text-black'
+                                : 'bg-gray-200 text-gray-800'
                             }`}
                           >
                             {opt.key}
                           </span>
                           <span className="flex-1 mt-0.5">{opt.text}</span>
                           {opt.isCorrect && (
-                            <span className="text-[10px] font-bold text-emerald-700 uppercase bg-emerald-100 px-2 py-0.5 rounded-md shrink-0">
+                            <span className="text-[10px] font-bold text-black uppercase bg-white px-2 py-0.5 rounded-md shrink-0">
                               Correct Answer
                             </span>
                           )}
@@ -413,9 +413,9 @@ function QuestionsContent() {
                     </div>
 
                     {q.explanation && (
-                      <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200/70 text-xs space-y-1">
-                        <span className="font-bold text-blue-900 block">Explanation:</span>
-                        <p className="text-blue-800 leading-relaxed">{q.explanation}</p>
+                      <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs space-y-1">
+                        <span className="font-bold text-gray-900 block">Explanation:</span>
+                        <p className="text-gray-700 leading-relaxed">{q.explanation}</p>
                       </div>
                     )}
                   </div>
@@ -428,7 +428,7 @@ function QuestionsContent() {
                       <button
                         type="button"
                         onClick={() => approveQuestion(q.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-gray-800 text-white text-xs font-semibold transition-colors"
                       >
                         <Icons.Check size={14} />
                         <span>Approve Question</span>
@@ -450,7 +450,7 @@ function QuestionsContent() {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(q)}
-                      className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-2 rounded-lg text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
                       title="Edit Question"
                     >
                       <Icons.Edit size={16} />
@@ -677,7 +677,7 @@ function QuestionsContent() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-semibold shadow-xs transition-colors"
             >
               {editingQuestion ? 'Update Question' : 'Save Question'}
             </button>

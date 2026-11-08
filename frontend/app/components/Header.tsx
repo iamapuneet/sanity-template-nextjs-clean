@@ -31,7 +31,7 @@ export default async function Header() {
               <li>
                 <Link
                   href="/admin"
-                  className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg bg-black hover:bg-gray-800 text-white font-semibold shadow-xs transition-colors"
                 >
                   Admin Panel
                 </Link>
