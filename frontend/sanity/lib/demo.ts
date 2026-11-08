@@ -20,12 +20,5 @@ export const description = [
     style: 'normal',
   },
 ]
-        _type: 'link',
-        href: 'https://sanity.io/',
-      },
-    ],
-    style: 'normal',
-  },
-]
 
-export const ogImageTitle = 'A Next.js Blog with a Native Authoring Experience'
+export const ogImageTitle = 'ExamForge – Government Exam Question Bank & Practice Platform'
