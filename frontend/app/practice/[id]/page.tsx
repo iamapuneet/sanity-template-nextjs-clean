@@ -76,6 +76,29 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
   // Quick candidate name for login fallback
   const [quickName, setQuickName] = useState('')
 
+  // Fullscreen & Question Palette Expand/Collapse State
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(true)
+
+  // Listen to fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => console.error(err))
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch((err) => console.error(err))
+      }
+    }
+  }
+
   // 1. Initial Load: Strip URL params and verify Student Session
   useEffect(() => {
     // Strip query parameters to ensure clean URL
@@ -682,8 +705,8 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Right: Timers, Exit Button, Submit Button */}
-        <div className="flex items-center gap-2 md:gap-4">
+        {/* Right: Timers, Fullscreen, Palette Toggle, Exit Button, Submit Button */}
+        <div className="flex items-center gap-2 md:gap-3">
           {/* Per-Question Live Ticker */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs">
             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
@@ -701,11 +724,33 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
             </span>
           </div>
 
+          {/* Fullscreen Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            {isFullscreen ? <Icons.Minimize size={14} /> : <Icons.Maximize size={14} />}
+            <span className="hidden md:inline">{isFullscreen ? 'Exit Full' : 'Fullscreen'}</span>
+          </button>
+
+          {/* Palette Expand/Collapse Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setPaletteOpen((prev) => !prev)}
+            title={paletteOpen ? 'Collapse Question Palette' : 'Expand Question Palette'}
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <span className="w-2 h-2 rounded-full bg-white"></span>
+            <span className="hidden sm:inline">{paletteOpen ? 'Hide Palette' : 'Show Palette'}</span>
+          </button>
+
           {/* Exit Exam Trigger Button */}
           <button
             type="button"
             onClick={() => setShowExitModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 font-semibold text-xs transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Icons.Close size={13} />
             <span className="hidden sm:inline">Exit Exam</span>
@@ -715,7 +760,7 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
           <button
             type="button"
             onClick={() => setShowSubmitModal(true)}
-            className="px-4 py-1.5 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-neutral-200 transition-colors shadow-xs"
+            className="px-4 py-1.5 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-neutral-200 transition-colors shadow-xs cursor-pointer"
           >
             Submit Test
           </button>
@@ -723,9 +768,9 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
       </header>
 
       {/* 2. Main Focused Examination Workspace */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Left Column: Active Question Statement & Options (3 Cols) */}
-        <div className="lg:col-span-3 flex flex-col justify-between rounded-3xl bg-white border border-gray-200 p-5 md:p-8 shadow-xs">
+      <div className={`flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 ${paletteOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-1'} gap-6 items-start transition-all`}>
+        {/* Left Column: Active Question Statement & Options */}
+        <div className={`${paletteOpen ? 'lg:col-span-3' : 'lg:col-span-1 max-w-4xl mx-auto w-full'} flex flex-col justify-between rounded-3xl bg-white border border-gray-200 p-5 md:p-8 shadow-xs transition-all`}>
           <div>
             {/* Question Top Bar */}
             <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-gray-100 mb-6">
@@ -739,6 +784,16 @@ export default function ExamLiveInterface({ params }: { params: Promise<{ id: st
               </div>
 
               <div className="flex items-center gap-2">
+                {!paletteOpen && (
+                  <button
+                    type="button"
+                    onClick={() => setPaletteOpen(true)}
+                    className="px-3 py-1 rounded-xl bg-black text-white hover:bg-neutral-800 font-mono font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  >
+                    <span>Palette ({answeredCount}/{questions.length})</span>
+                    <Icons.ChevronRight size={13} />
+                  </button>
+                )}
                 <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-100 text-black border border-gray-200">
                   {currentQ?.language_code === 'hi' ? 'हिंदी' : 'English'}
                 </span>
