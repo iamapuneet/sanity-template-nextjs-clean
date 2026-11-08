@@ -2,7 +2,6 @@ import './globals.css'
 
 import {SpeedInsights} from '@vercel/speed-insights/next'
 import type {Metadata} from 'next'
-import {Inter, IBM_Plex_Mono} from 'next/font/google'
 import {draftMode} from 'next/headers'
 import {toPlainText} from 'next-sanity'
 import {VisualEditing} from 'next-sanity/visual-editing'
@@ -58,18 +57,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-  display: 'swap',
-})
+const inter = {
+  variable: '',
+}
 
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: '--font-ibm-plex-mono',
-  weight: ['400'],
-  subsets: ['latin'],
-  display: 'swap',
-})
+const ibmPlexMono = {
+  variable: '',
+}
 
 export default async function RootLayout({children}: LayoutProps<'/'>) {
   const {isEnabled: isDraftMode} = await draftMode()

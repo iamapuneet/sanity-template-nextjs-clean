@@ -214,7 +214,7 @@ export default function ResultsAnalyticsPage() {
         onClose={() => setSelectedAttemptId(null)}
         title="Candidate Per-Question Timing & Response Analysis"
         subtitle="Granular breakdown of time spent on each individual question"
-        maxWidth="3xl"
+        maxWidth="2xl"
       >
         {drilldownLoading || !drilldownData ? (
           <div className="py-16 text-center text-sm text-gray-400">Loading question metrics...</div>

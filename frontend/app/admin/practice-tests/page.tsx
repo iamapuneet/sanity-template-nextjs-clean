@@ -271,7 +271,7 @@ function PracticeTestsContent() {
         onClose={() => setIsBuilderOpen(false)}
         title="Practice Test Builder"
         subtitle="Select questions using checkboxes and configure test parameters"
-        maxWidth="3xl"
+        maxWidth="2xl"
       >
         <form onSubmit={handleSaveTest} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
