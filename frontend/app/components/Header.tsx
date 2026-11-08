@@ -12,18 +12,26 @@ export default async function Header() {
       <div className="container py-6 px-2 sm:px-6">
         <div className="flex items-center justify-between gap-5">
           <Link className="flex items-center gap-2" href="/">
-            <span className="text-lg sm:text-2xl pl-2 font-semibold">
-              {settings?.title || 'Sanity + Next.js'}
+            <span className="text-lg sm:text-2xl pl-2 font-semibold tracking-tight text-gray-900">
+              {settings?.title || 'ExamForge – Exam Question Bank'}
             </span>
           </Link>
 
           <nav>
             <ul
               role="list"
-              className="flex items-center gap-4 md:gap-6 leading-5 text-xs sm:text-base tracking-tight font-mono"
+              className="flex items-center gap-4 md:gap-6 leading-5 text-xs sm:text-sm tracking-tight font-medium"
             >
               <li>
-                <Link href="/about" className="hover:underline">
+                <Link
+                  href="/admin"
+                  className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs transition-colors"
+                >
+                  Admin Panel
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-gray-600 hover:text-gray-900 hover:underline">
                   About
                 </Link>
               </li>
