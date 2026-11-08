@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --fix",
     "sanity:typegen": "cd ../studio && sanity schema extract --enforce-required-fields --path ../sanity.schema.json && cd ../frontend && sanity typegen generate",
     "start": "next start",
+    "db:reset": "powershell -ExecutionPolicy Bypass -File ../database/reset_data.ps1",
     "type-check": "next typegen && tsc --noEmit"
   },
   "dependencies": {
