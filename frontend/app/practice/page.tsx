@@ -32,12 +32,28 @@ interface AssessmentItem {
   passing_percentage: number
   difficulty_level: string
   subject_id: number | null
+  topic_id?: number | null
   subject_name: string | null
   subject_code: string | null
+  topic_name?: string | null
+  main_topic_id?: number | null
+  main_topic_name?: string | null
   exam_name?: string
+  attempt_status?: string | null
+  last_score?: number | string | null
 }
 
-// 6 Available Subjects as defined in specification
+interface TopicItem {
+  id: number | string
+  subject_id: number | string
+  name: string
+  hindiName?: string
+  description?: string
+  level?: number
+  tests_count?: number
+}
+
+// 6 Available Subjects
 const CORE_SUBJECT_OPTIONS = [
   {
     id: 'all',
@@ -83,6 +99,242 @@ const CORE_SUBJECT_OPTIONS = [
   },
 ]
 
+// Main Topic Registry by Subject with rich Hindi descriptions
+const SYLLABUS_MAIN_TOPICS: Record<string, TopicItem[]> = {
+  // Reasoning (Subject 2)
+  '2': [
+    {
+      id: '823',
+      subject_id: '2',
+      name: 'Blood Relations',
+      hindiName: 'रक्त संबंध (Blood Relations)',
+      description: 'Family relationship terms, same-generation, maternal/paternal, direct relationships & pointing-to-person questions.',
+    },
+    {
+      id: '805',
+      subject_id: '2',
+      name: 'Number and Alphabet Series',
+      hindiName: 'संख्या एवं वर्णमाला श्रृंखला',
+      description: 'Missing numbers, letter pattern repetition, increasing/decreasing numerical series and mixed drills.',
+    },
+    {
+      id: '814',
+      subject_id: '2',
+      name: 'Coding-Decoding',
+      hindiName: 'कूटलेखन / डिकोडिंग (Coding-Decoding)',
+      description: 'Letter shift algorithms, substitution codes, number-symbol coding and matrix decoding.',
+    },
+    {
+      id: '832',
+      subject_id: '2',
+      name: 'Direction Sense',
+      hindiName: 'दिशा ज्ञान परीक्षण (Direction Sense)',
+      description: 'Cardinal directions (N/S/E/W), angular turns, shadow concepts, distance & displacement drills.',
+    },
+    {
+      id: '840',
+      subject_id: '2',
+      name: 'Analogy',
+      hindiName: 'सादृश्यता परीक्षण (Analogy)',
+      description: 'Word analogy, number-pair relationships, letter analogy and general knowledge relationships.',
+    },
+    {
+      id: '847',
+      subject_id: '2',
+      name: 'Classification / Odd One Out',
+      hindiName: 'वर्गीकरण / विजातीय छांटना',
+      description: 'Spotting the odd element among words, numbers, letters and geometric patterns.',
+    },
+    {
+      id: '854',
+      subject_id: '2',
+      name: 'Alphabetical Order',
+      hindiName: 'वर्णमाला क्रम परीक्षण',
+      description: 'Dictionary word sequencing, meaningful word formation and position value tests.',
+    },
+    {
+      id: '861',
+      subject_id: '2',
+      name: 'Mathematical Operations',
+      hindiName: 'गणितीय संक्रियाएं (BODMAS)',
+      description: 'Symbol interchange, arithmetic operations balance and equation validation.',
+    },
+    {
+      id: '867',
+      subject_id: '2',
+      name: 'Data Sufficiency',
+      hindiName: 'आंकड़ा पर्याप्तता (Data Sufficiency)',
+      description: 'Statement evaluation, logical sufficiency to answer questions in minimal statements.',
+    },
+    {
+      id: '875',
+      subject_id: '2',
+      name: 'Arrangement and Puzzles',
+      hindiName: 'बैठक व्यवस्था एवं पहेलियां',
+      description: 'Linear seating, circular arrangements, tabular puzzles and rank-order comparisons.',
+    },
+    {
+      id: '885',
+      subject_id: '2',
+      name: 'Logical Reasoning',
+      hindiName: 'तार्किक विश्लेषण (Statements & Arguments)',
+      description: 'Statement-assumptions, statement-conclusions, cause and effect, assertion-reasoning.',
+    },
+    {
+      id: '895',
+      subject_id: '2',
+      name: 'Non-Verbal Reasoning',
+      hindiName: 'अशाब्दिक तर्कशक्ति (Non-Verbal)',
+      description: 'Mirror & water images, paper folding/cutting, figure completion, embedded figures and cube dice.',
+    },
+  ],
+
+  // Computer Knowledge (Subject 1)
+  '1': [
+    {
+      id: '734',
+      subject_id: '1',
+      name: 'Programming, Algorithms and IDE',
+      hindiName: 'प्रोग्रामिंग, एल्गोरिदम एवं फ्लोचार्ट',
+      description: 'C programming language, data types, operators, flowcharts symbols, algorithms, and IDE basics.',
+    },
+    {
+      id: '473',
+      subject_id: '1',
+      name: 'Computer Fundamentals and Hardware',
+      hindiName: 'कंप्यूटर का मूल परिचय एवं हार्डवेयर',
+      description: 'Generations of computers, CPU architecture, input/output devices, memory types (RAM/ROM/Cache).',
+    },
+    {
+      id: '513',
+      subject_id: '1',
+      name: 'Number System and Data Representation',
+      hindiName: 'संख्या प्रणाली एवं डेटा निरूपण',
+      description: 'Binary, octal, decimal, hexadecimal conversions, ASCII, Unicode and 2s complement.',
+    },
+    {
+      id: '540',
+      subject_id: '1',
+      name: 'Operating System (OS)',
+      hindiName: 'ऑपरेटिंग सिस्टम (OS Concepts)',
+      description: 'Process management, CPU scheduling, virtual memory, paging, file systems, Linux & Windows.',
+    },
+    {
+      id: '585',
+      subject_id: '1',
+      name: 'MS Office and Database',
+      hindiName: 'एमएस ऑफिस एवं डेटाबेस (MS Office & DBMS)',
+      description: 'MS Word, Excel formulas/charts, PowerPoint, Access, relational database, SQL queries & keys.',
+    },
+    {
+      id: '645',
+      subject_id: '1',
+      name: 'Networking and Data Communication',
+      hindiName: 'नेटवर्किंग एवं डेटा संचार',
+      description: 'OSI 7-layer model, TCP/IP, IP addressing, routing, protocols (HTTP, FTP, DNS), topologies.',
+    },
+    {
+      id: '705',
+      subject_id: '1',
+      name: 'Cyber Security and IT Law',
+      hindiName: 'साइबर सुरक्षा एवं आईटी अधिनियम',
+      description: 'Malware types (virus, trojan, ransomware), cryptography, firewalls, cyber ethics, and IT Act 2000.',
+    },
+  ],
+
+  // Mathematics (Subject 3)
+  '3': [
+    {
+      id: '906',
+      subject_id: '3',
+      name: 'Number System',
+      hindiName: 'संख्या पद्धति (Number System)',
+      description: 'Types of numbers, prime numbers, divisibility tests, unit digit and remainders.',
+    },
+    {
+      id: '918',
+      subject_id: '3',
+      name: 'HCF, LCM and Divisibility',
+      hindiName: 'ल.स.प. एवं म.स.प. (HCF & LCM)',
+      description: 'Factors, multiples, prime factorization, application problems on bells/races.',
+    },
+    {
+      id: '926',
+      subject_id: '3',
+      name: 'Simplification and Decimals',
+      hindiName: 'सरलीकरण एवं दशमलव भिन्न',
+      description: 'BODMAS rule, vulgar fractions, recurring decimals, powers, roots and surds.',
+    },
+    {
+      id: '937',
+      subject_id: '3',
+      name: 'Algebra and Word Problems',
+      hindiName: 'बीजगणित एवं शब्द समस्याएं',
+      description: 'Linear equations in one/two variables, age problems, ratio & proportion applications.',
+    },
+    {
+      id: '949',
+      subject_id: '3',
+      name: 'Percentage',
+      hindiName: 'प्रतिशतता (Percentage)',
+      description: 'Concept of percent, fractional equivalents, population change, profit-loss applications.',
+    },
+    {
+      id: '958',
+      subject_id: '3',
+      name: 'Average',
+      hindiName: 'औसत (Average)',
+      description: 'Arithmetic mean, weighted average, inclusion/exclusion of items, speed averages.',
+    },
+    {
+      id: '966',
+      subject_id: '3',
+      name: 'Permutation and Combination',
+      hindiName: 'क्रमचय एवं संचय (Permutation & Combination)',
+      description: 'Fundamental counting principle, factorial notation, arrangements and selections.',
+    },
+    {
+      id: '975',
+      subject_id: '3',
+      name: 'Data Interpretation (DI)',
+      hindiName: 'समंकों का विश्लेषण (Data Interpretation)',
+      description: 'Bar graphs, line charts, pie charts, tabular analysis and trend questions.',
+    },
+  ],
+
+  // General Knowledge (Subject 4)
+  '4': [
+    {
+      id: '986',
+      subject_id: '4',
+      name: 'Rajasthan General Knowledge',
+      hindiName: 'राजस्थान सामान्य ज्ञान (History, Geography & Culture)',
+      description: 'Rajasthan history, forts, palaces, folk dances, fairs, festivals, geography, rivers, and schemes.',
+    },
+    {
+      id: '1043',
+      subject_id: '4',
+      name: 'Indian Geography and Census',
+      hindiName: 'भारत का भूगोल एवं जनगणना',
+      description: 'Physiographic divisions of India, major rivers, climate, agriculture, minerals, and 2011 Census.',
+    },
+    {
+      id: '1055',
+      subject_id: '4',
+      name: 'General Science',
+      hindiName: 'सामान्य विज्ञान (Everyday Science)',
+      description: 'Physics fundamentals, chemistry in daily life, human biology, diseases, nutrition and environment.',
+    },
+    {
+      id: '1069',
+      subject_id: '4',
+      name: 'Sports and Current Affairs',
+      hindiName: 'समसामयिक घटनाएं एवं खेलकूद',
+      description: 'Major current affairs of Rajasthan & India, awards, appointments, summits, sports & tournaments.',
+    },
+  ],
+}
+
 const DIFFICULTY_OPTIONS = [
   {
     id: 'easy',
@@ -111,9 +363,10 @@ function PracticePortalContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Initialize state synchronously from searchParams to avoid step-jumping or layout flash on refresh
-  const initialStep = useMemo<1 | 2 | 3>(() => {
+  // 4-Step Guided Flow State (1: Subject, 2: Topic, 3: Difficulty, 4: Practice Test)
+  const initialStep = useMemo<1 | 2 | 3 | 4>(() => {
     const s = searchParams.get('step')
+    if (s === '4') return 4
     if (s === '3') return 3
     if (s === '2') return 2
     return 1
@@ -125,6 +378,11 @@ function PracticePortalContent() {
     return 'all'
   }, [searchParams])
 
+  const initialTopic = useMemo<string>(() => {
+    const t = searchParams.get('topic')
+    return t || 'all'
+  }, [searchParams])
+
   const initialDiff = useMemo<'easy' | 'medium' | 'hard' | null>(() => {
     const diff = searchParams.get('diff')
     if (diff === 'easy' || diff === 'medium' || diff === 'hard') return diff
@@ -133,46 +391,30 @@ function PracticePortalContent() {
 
   const [assessments, setAssessments] = useState<AssessmentItem[]>([])
   const [subjects, setSubjects] = useState<SubjectItem[]>([])
-  const [currentStudent, setCurrentStudent] = useState<any>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('examforge_current_student')
-        return saved ? JSON.parse(saved) : null
-      } catch {
-        return null
-      }
-    }
-    return null
-  })
+  const [currentStudent, setCurrentStudent] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  // 3-Step Guided Flow State (1: Subject, 2: Difficulty, 3: Practice Test)
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep)
-
-  // Step 1: Selected Subject
+  // Guided Flow States
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(initialStep)
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(initialSubject)
-
-  // Step 2: Selected Difficulty Level
+  const [selectedTopic, setSelectedTopic] = useState<string>(initialTopic)
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(initialDiff)
-
-  // Step 3: Search filter for tests
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Bookmark management state
+  // Modals
   const [showBookmarksModal, setShowBookmarksModal] = useState(false)
   const [bookmarkCount, setBookmarkCount] = useState<number>(0)
-
-  // My Results modal state
   const [showResultsModal, setShowResultsModal] = useState(false)
 
   // Sync state if browser back/forward buttons change searchParams
   useEffect(() => {
     setCurrentStep(initialStep)
     setSelectedSubjectId(initialSubject)
+    setSelectedTopic(initialTopic)
     setSelectedDifficulty(initialDiff)
-  }, [initialStep, initialSubject, initialDiff])
+  }, [initialStep, initialSubject, initialTopic, initialDiff])
 
-  // Fetch bookmarks count when current student is selected
+  // Fetch bookmarks count
   useEffect(() => {
     if (!currentStudent?.id) return
     let active = true
@@ -225,13 +467,19 @@ function PracticePortalContent() {
   }, [])
 
   // Sync navigation state with browser history URL
-  const updateUrlParams = (step: 1 | 2 | 3, subId: string, diff: string | null) => {
+  const updateUrlParams = (
+    step: 1 | 2 | 3 | 4,
+    subId: string,
+    topicName: string,
+    diff: string | null
+  ) => {
     const params = new URLSearchParams()
     params.set('step', String(step))
-    if (subId) params.set('subject', subId)
+    if (subId && subId !== 'all') params.set('subject', subId)
+    if (topicName && topicName !== 'all') params.set('topic', topicName)
     if (diff) params.set('diff', diff)
     const newUrl = `${window.location.pathname}?${params.toString()}`
-    window.history.pushState({ step, subId, diff }, '', newUrl)
+    window.history.pushState({ step, subId, topicName, diff }, '', newUrl)
   }
 
   // Normalizer helper: maps difficulty to 'easy', 'medium', or 'hard'
@@ -242,7 +490,12 @@ function PracticePortalContent() {
     return 'medium'
   }
 
-  // Calculate dynamic test counts for all 6 subjects
+  // Active Subject Object
+  const activeSubject = useMemo(() => {
+    return CORE_SUBJECT_OPTIONS.find((s) => s.id === selectedSubjectId) || CORE_SUBJECT_OPTIONS[0]
+  }, [selectedSubjectId])
+
+  // Subject test counts
   const subjectTestCounts = useMemo(() => {
     const map: Record<string, number> = {
       all: assessments.length,
@@ -265,11 +518,58 @@ function PracticePortalContent() {
     return map
   }, [assessments])
 
-  // Count tests in currently selected subject for each difficulty level
-  const difficultyCounts = useMemo(() => {
+  // Topics available for the selected subject
+  const availableTopics = useMemo<TopicItem[]>(() => {
+    if (selectedSubjectId === 'all' || selectedSubjectId === 'full_mock') {
+      // Return combined topics across all subjects or from tests
+      const combined: TopicItem[] = []
+      for (const [subId, list] of Object.entries(SYLLABUS_MAIN_TOPICS)) {
+        combined.push(...list)
+      }
+      return combined
+    }
+    return SYLLABUS_MAIN_TOPICS[selectedSubjectId] || []
+  }, [selectedSubjectId])
+
+  // Count tests per topic for the active subject
+  const topicTestCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    // Scoped tests for this subject
     const scoped = assessments.filter((t) => {
       if (selectedSubjectId === 'full_mock') return t.subject_id === null
       if (selectedSubjectId !== 'all') return String(t.subject_id) === String(selectedSubjectId)
+      return true
+    })
+
+    for (const t of scoped) {
+      const mainName = t.main_topic_name || 'General Mock Tests'
+      counts[mainName] = (counts[mainName] || 0) + 1
+      if (t.topic_name && t.topic_name !== mainName) {
+        counts[t.topic_name] = (counts[t.topic_name] || 0) + 1
+      }
+    }
+
+    return counts
+  }, [assessments, selectedSubjectId])
+
+  // Count tests in currently selected subject & topic for each difficulty level
+  const difficultyCounts = useMemo(() => {
+    const scoped = assessments.filter((t) => {
+      // 1. Subject match
+      if (selectedSubjectId === 'full_mock') {
+        if (t.subject_id !== null) return false
+      } else if (selectedSubjectId !== 'all') {
+        if (String(t.subject_id) !== String(selectedSubjectId)) return false
+      }
+      // 2. Topic match
+      if (selectedTopic !== 'all') {
+        const testMain = (t.main_topic_name || '').toLowerCase()
+        const target = selectedTopic.toLowerCase()
+        const testSub = (t.topic_name || '').toLowerCase()
+        if (testMain !== target && !testMain.includes(target) && !testSub.includes(target)) {
+          return false
+        }
+      }
       return true
     })
 
@@ -279,14 +579,9 @@ function PracticePortalContent() {
       medium: scoped.filter((t) => normalizeDiff(t.difficulty_level) === 'medium').length,
       hard: scoped.filter((t) => normalizeDiff(t.difficulty_level) === 'hard').length,
     }
-  }, [assessments, selectedSubjectId])
+  }, [assessments, selectedSubjectId, selectedTopic])
 
-  // Get active subject metadata
-  const activeSubject = useMemo(() => {
-    return CORE_SUBJECT_OPTIONS.find((s) => s.id === selectedSubjectId) || CORE_SUBJECT_OPTIONS[0]
-  }, [selectedSubjectId])
-
-  // Filter assessments strictly for Step 3
+  // Final Filtered Assessments for Step 4
   const finalFilteredAssessments = useMemo(() => {
     return assessments.filter((test) => {
       // 1. Subject match
@@ -296,58 +591,86 @@ function PracticePortalContent() {
         if (String(test.subject_id) !== String(selectedSubjectId)) return false
       }
 
-      // 2. Difficulty match
+      // 2. Topic match
+      if (selectedTopic !== 'all') {
+        const testMain = (test.main_topic_name || '').toLowerCase()
+        const target = selectedTopic.toLowerCase()
+        const testSub = (test.topic_name || '').toLowerCase()
+        if (testMain !== target && !testMain.includes(target) && !testSub.includes(target)) {
+          return false
+        }
+      }
+
+      // 3. Difficulty match
       if (selectedDifficulty) {
         const testDiff = normalizeDiff(test.difficulty_level)
         if (testDiff !== selectedDifficulty) return false
       }
 
-      // 3. Search query
+      // 4. Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim()
         const matchTitle = test.title?.toLowerCase().includes(q)
         const matchDesc = test.description?.toLowerCase().includes(q)
         const matchSubject = test.subject_name?.toLowerCase().includes(q)
-        if (!matchTitle && !matchDesc && !matchSubject) return false
+        const matchTopic = test.topic_name?.toLowerCase().includes(q)
+        const matchMain = test.main_topic_name?.toLowerCase().includes(q)
+        if (!matchTitle && !matchDesc && !matchSubject && !matchTopic && !matchMain) return false
       }
 
       return true
     })
-  }, [assessments, selectedSubjectId, selectedDifficulty, searchQuery])
+  }, [assessments, selectedSubjectId, selectedTopic, selectedDifficulty, searchQuery])
 
   // Navigation handlers
-  const handleProceedToStep2 = () => {
-    if (!selectedSubjectId) return
+  const handleProceedToStep2 = (subId?: string) => {
+    const sId = subId || selectedSubjectId
+    setSelectedSubjectId(sId)
+    setSelectedTopic('all')
     setCurrentStep(2)
-    updateUrlParams(2, selectedSubjectId, selectedDifficulty)
+    updateUrlParams(2, sId, 'all', selectedDifficulty)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleProceedToStep3 = () => {
-    if (!selectedDifficulty) return
+  const handleProceedToStep3 = (topicName?: string) => {
+    const tName = topicName !== undefined ? topicName : selectedTopic
+    setSelectedTopic(tName)
     setCurrentStep(3)
-    updateUrlParams(3, selectedSubjectId, selectedDifficulty)
+    updateUrlParams(3, selectedSubjectId, tName, selectedDifficulty)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleProceedToStep4 = (diff?: 'easy' | 'medium' | 'hard') => {
+    const dVal = diff || selectedDifficulty || 'medium'
+    setSelectedDifficulty(dVal)
+    setCurrentStep(4)
+    updateUrlParams(4, selectedSubjectId, selectedTopic, dVal)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBackToStep1 = () => {
     setCurrentStep(1)
-    updateUrlParams(1, selectedSubjectId, selectedDifficulty)
+    updateUrlParams(1, selectedSubjectId, selectedTopic, selectedDifficulty)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBackToStep2 = () => {
     setCurrentStep(2)
-    updateUrlParams(2, selectedSubjectId, selectedDifficulty)
+    updateUrlParams(2, selectedSubjectId, selectedTopic, selectedDifficulty)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleBackToStep3 = () => {
+    setCurrentStep(3)
+    updateUrlParams(3, selectedSubjectId, selectedTopic, selectedDifficulty)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
     <div className="min-h-screen bg-[#101010] text-[#FFFFFF] flex flex-col font-sans selection:bg-[#222222] selection:text-[#FFFFFF]">
-      {/* 1. Header — Soft Monochrome Dark */}
+      {/* 1. Header */}
       <header className="sticky top-0 z-40 bg-[#101010] border-b border-[#303030]">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo & Subtitle */}
           <Link href="/" className="flex items-center gap-3 group">
             <ExamForgeLogo variant="badge" size={20} className="w-9 h-9 rounded-xl group-hover:border-[#FAFAFA]/40 transition-colors" />
             <div>
@@ -360,7 +683,7 @@ function PracticePortalContent() {
             </div>
           </Link>
 
-          {/* Right Header Navigation: Candidate info & Admin link */}
+          {/* Right Header Navigation */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             {currentStudent && (
               <button
@@ -449,64 +772,59 @@ function PracticePortalContent() {
             </p>
           </div>
         )}
-        {/* Top Statistics Bar — Compact Dark Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-4 rounded-2xl bg-[#1C1C1C] border border-[#303030] text-left">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-[#737373] block mb-1">
-              Total Drills
-            </span>
-            <div className="text-xl sm:text-2xl font-black font-mono text-[#FFFFFF]">
-              {loading ? (
-                <span className="inline-block w-20 h-7 bg-[#2A2A2A] rounded-lg animate-pulse" />
-              ) : (
-                `${assessments.length} Tests`
-              )}
-            </div>
-          </div>
 
-          <div className="p-4 rounded-2xl bg-[#1C1C1C] border border-[#303030] text-left">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-[#737373] block mb-1">
-              Marking Scheme
-            </span>
-            <div className="text-xl sm:text-2xl font-black font-mono text-[#FFFFFF]">
-              +1.0 / -0.25
+        {/* Top Breadcrumb & Status Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#171717] border border-[#303030] p-3 rounded-2xl">
+          <div className="p-2.5 rounded-xl bg-[#111111] border border-[#262626]">
+            <div className="text-[10px] uppercase font-bold text-[#737373] tracking-wider mb-1">
+              Active Subject
             </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#1C1C1C] border border-[#303030] text-left">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-[#737373] block mb-1">
-              Selected Subject
-            </span>
-            <div className="text-sm sm:text-base font-bold text-[#FFFFFF] truncate" title={activeSubject.name}>
+            <div className="font-bold text-xs sm:text-sm text-[#FAFAFA] truncate">
               {activeSubject.name}
             </div>
           </div>
-
-          <div className="p-4 rounded-2xl bg-[#1C1C1C] border border-[#303030] text-left">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-[#737373] block mb-1">
-              Active Level
-            </span>
-            <div className="text-sm sm:text-base font-bold text-[#FFFFFF] uppercase">
-              {selectedDifficulty || 'Not Chosen'}
+          <div className="p-2.5 rounded-xl bg-[#111111] border border-[#262626]">
+            <div className="text-[10px] uppercase font-bold text-[#737373] tracking-wider mb-1">
+              Active Topic
+            </div>
+            <div className="font-bold text-xs sm:text-sm text-amber-300 truncate">
+              {selectedTopic === 'all' ? 'All Topics / Mixed' : selectedTopic}
+            </div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-[#111111] border border-[#262626]">
+            <div className="text-[10px] uppercase font-bold text-[#737373] tracking-wider mb-1">
+              Selected Level
+            </div>
+            <div className="font-bold text-xs sm:text-sm text-[#FAFAFA] uppercase">
+              {selectedDifficulty || 'All Levels'}
+            </div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-[#111111] border border-[#262626]">
+            <div className="text-[10px] uppercase font-bold text-[#737373] tracking-wider mb-1">
+              Available Drills
+            </div>
+            <div className="font-mono font-black text-xs sm:text-sm text-emerald-400">
+              {difficultyCounts.all} Tests
             </div>
           </div>
         </div>
 
-        {/* 3. Three-Step Progress Indicator (Non-clickable visual indicator) */}
+        {/* 3. Four-Step Progress Indicator */}
         <div className="p-3 sm:p-4 rounded-2xl bg-[#171717] border border-[#303030]">
-          <div className="flex items-center justify-between text-xs sm:text-sm font-semibold select-none">
+          <div className="grid grid-cols-4 gap-2 text-xs sm:text-sm font-semibold select-none">
             {/* Step 1 Pill */}
             <div
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all cursor-default ${
+              onClick={() => handleBackToStep1()}
+              className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                 currentStep === 1
                   ? 'bg-[#202020] text-white border border-[#3F3F46] font-bold shadow-xs'
                   : currentStep > 1
-                  ? 'text-[#FFFFFF]'
+                  ? 'text-[#FFFFFF] hover:bg-[#202020]'
                   : 'text-[#737373]'
               }`}
             >
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black ${
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black shrink-0 ${
                   currentStep === 1
                     ? 'bg-[#D4D4D8] text-[#111111]'
                     : currentStep > 1
@@ -516,25 +834,27 @@ function PracticePortalContent() {
               >
                 {currentStep > 1 ? '✓' : '1'}
               </span>
-              <span>Step 1 — Subject</span>
+              <span className="hidden sm:inline">1. Subject</span>
+              <span className="sm:hidden text-[11px]">Subject</span>
             </div>
 
-            <span className="text-[#303030] font-bold">→</span>
-
-            {/* Step 2 Pill */}
+            {/* Step 2 Pill (TOPIC SELECTION) */}
             <div
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all cursor-default ${
+              onClick={() => {
+                if (currentStep > 2) handleBackToStep2()
+              }}
+              className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl transition-all ${
                 currentStep === 2
                   ? 'bg-[#202020] text-white border border-[#3F3F46] font-bold shadow-xs'
                   : currentStep > 2
-                  ? 'text-[#FFFFFF]'
-                  : 'text-[#737373]'
+                  ? 'text-[#FFFFFF] cursor-pointer hover:bg-[#202020]'
+                  : 'text-[#737373] cursor-default'
               }`}
             >
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black ${
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black shrink-0 ${
                   currentStep === 2
-                    ? 'bg-[#D4D4D8] text-[#111111]'
+                    ? 'bg-amber-400 text-black'
                     : currentStep > 2
                     ? 'bg-[#303030] text-[#FFFFFF]'
                     : 'bg-[#222222] text-[#737373]'
@@ -542,53 +862,79 @@ function PracticePortalContent() {
               >
                 {currentStep > 2 ? '✓' : '2'}
               </span>
-              <span>Step 2 — Difficulty</span>
+              <span className="hidden sm:inline">2. Topic</span>
+              <span className="sm:hidden text-[11px]">Topic</span>
             </div>
 
-            <span className="text-[#303030] font-bold">→</span>
-
-            {/* Step 3 Pill */}
+            {/* Step 3 Pill (DIFFICULTY) */}
             <div
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all cursor-default ${
+              onClick={() => {
+                if (currentStep > 3) handleBackToStep3()
+              }}
+              className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl transition-all ${
                 currentStep === 3
+                  ? 'bg-[#202020] text-white border border-[#3F3F46] font-bold shadow-xs'
+                  : currentStep > 3
+                  ? 'text-[#FFFFFF] cursor-pointer hover:bg-[#202020]'
+                  : 'text-[#737373] cursor-default'
+              }`}
+            >
+              <span
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black shrink-0 ${
+                  currentStep === 3
+                    ? 'bg-[#D4D4D8] text-[#111111]'
+                    : currentStep > 3
+                    ? 'bg-[#303030] text-[#FFFFFF]'
+                    : 'bg-[#222222] text-[#737373]'
+                }`}
+              >
+                {currentStep > 3 ? '✓' : '3'}
+              </span>
+              <span className="hidden sm:inline">3. Difficulty</span>
+              <span className="sm:hidden text-[11px]">Level</span>
+            </div>
+
+            {/* Step 4 Pill (PRACTICE TEST) */}
+            <div
+              className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl transition-all cursor-default ${
+                currentStep === 4
                   ? 'bg-[#202020] text-white border border-[#3F3F46] font-bold shadow-xs'
                   : 'text-[#737373]'
               }`}
             >
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black ${
-                  currentStep === 3
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black shrink-0 ${
+                  currentStep === 4
                     ? 'bg-[#D4D4D8] text-[#111111]'
                     : 'bg-[#222222] text-[#737373]'
                 }`}
               >
-                3
+                4
               </span>
-              <span>Step 3 — Practice Test</span>
+              <span className="hidden sm:inline">4. Practice Test</span>
+              <span className="sm:hidden text-[11px]">Tests</span>
             </div>
           </div>
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* STEP 1: CHOOSE SUBJECT (केवल विषय चयन स्क्रीन)                */}
+        {/* STEP 1: CHOOSE SUBJECT                                        */}
         {/* ------------------------------------------------------------- */}
         {currentStep === 1 && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Step Header */}
             <div className="space-y-1">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1C1C1C] border border-[#303030] text-[#A3A3A3]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#FFFFFF]"></span>
-                Step 1 of 3
+                Step 1 of 4 • Subject Selection
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#FFFFFF] tracking-tight">
                 Choose Your Subject
               </h1>
               <p className="text-sm text-[#A3A3A3]">
-                Select a subject to start your practice journey.
+                Select a syllabus subject to proceed to topic-level practice drills.
               </p>
             </div>
 
-            {/* 6 Subject Selection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {CORE_SUBJECT_OPTIONS.map((sub) => {
                 const isSelected = selectedSubjectId === sub.id
@@ -597,95 +943,54 @@ function PracticePortalContent() {
                 return (
                   <div
                     key={sub.id}
-                    onClick={() => setSelectedSubjectId(sub.id)}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between text-left ${
+                    onClick={() => {
+                      setSelectedSubjectId(sub.id)
+                      handleProceedToStep2(sub.id)
+                    }}
+                    className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between text-left group ${
                       isSelected
                         ? 'bg-[#202020] text-[#FAFAFA] border-2 border-white shadow-xl ring-1 ring-white/20'
                         : 'bg-[#141414] text-[#FAFAFA] border-[#262626] hover:bg-[#1A1A1A] hover:border-[#383838]'
                     }`}
                   >
                     <div>
-                      {/* Top Bar: Abbrev badge & Available test count */}
                       <div className="flex items-center justify-between mb-3">
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-[#181818] border border-[#2E2E2E] text-white">
+                          {sub.code}
+                        </span>
                         <span
-                          className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-md ${
+                          className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-md ${
                             isSelected
                               ? 'bg-[#2E2E2E] text-white border border-[#444444]'
                               : 'bg-[#1E1E1E] text-[#A1A1AA] border border-[#2B2B2B]'
                           }`}
                         >
-                          {sub.code}
-                        </span>
-                        <span
-                          className={`text-xs font-mono font-bold ${
-                            isSelected ? 'text-[#FAFAFA]' : 'text-[#71717A]'
-                          }`}
-                        >
-                          {loading ? (
-                            <span className="inline-block w-16 h-3 bg-[#333333] rounded animate-pulse" />
-                          ) : (
-                            `${testCount} Tests Available`
-                          )}
+                          {testCount} Tests
                         </span>
                       </div>
 
-                      {/* Subject Name & Hindi Name */}
-                      <h3
-                        className="text-base font-extrabold leading-tight mb-1 text-[#FFFFFF]"
-                      >
+                      <h3 className="text-lg font-black text-white group-hover:text-amber-300 transition-colors">
                         {sub.name}
                       </h3>
-                      <p
-                        className={`text-xs font-medium mb-3 ${
-                          isSelected ? 'text-[#D4D4D8]' : 'text-[#A1A1AA]'
-                        }`}
-                      >
-                        {sub.hindiName}
-                      </p>
-
-                      {/* Description */}
-                      <p
-                        className={`text-xs leading-relaxed ${
-                          isSelected ? 'text-[#E4E4E7]' : 'text-[#A1A1AA]'
-                        }`}
-                      >
+                      <div className="text-xs font-bold text-[#A1A1AA] mb-2">{sub.hindiName}</div>
+                      <p className="text-xs text-[#71717A] leading-relaxed line-clamp-3">
                         {sub.description}
                       </p>
                     </div>
 
-                    {/* Bottom Selected Indicator */}
-                    <div className={`mt-4 pt-3 border-t flex items-center justify-between text-xs font-bold ${
-                      isSelected ? 'border-[#383838] text-white' : 'border-[#262626] text-[#71717A]'
-                    }`}>
-                      <span>{isSelected ? '✓ Selected' : 'Click to select'}</span>
-                      <Icons.ChevronRight size={14} />
+                    <div className="mt-5 pt-3 border-t border-[#262626] flex items-center justify-between text-xs font-bold text-white">
+                      <span>Choose Topics →</span>
+                      <Icons.ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 )
               })}
             </div>
-
-            {/* Bottom Actions: Continue Button */}
-            <div className="pt-4 border-t border-[#2A2A2A] flex items-center justify-between">
-              <span className="text-xs text-[#737373]">
-                Selected: <strong className="text-[#FFFFFF]">{activeSubject.name}</strong>
-              </span>
-
-              <button
-                type="button"
-                onClick={handleProceedToStep2}
-                disabled={!selectedSubjectId}
-                className="px-6 py-3 rounded-xl bg-[#D4D4D8] hover:bg-[#E4E4E7] text-[#111111] font-bold text-sm transition-all flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <span>Continue to Step 2</span>
-                <Icons.ChevronRight size={16} />
-              </button>
-            </div>
           </div>
         )}
 
         {/* ------------------------------------------------------------- */}
-        {/* STEP 2: CHOOSE DIFFICULTY (केवल कठिनाई स्तर स्क्रीन)          */}
+        {/* STEP 2: CHOOSE TOPIC (विषय के अंतर्गत टॉपिक चयन स्क्रीन)     */}
         {/* ------------------------------------------------------------- */}
         {currentStep === 2 && (
           <div className="space-y-6 animate-fadeIn">
@@ -693,22 +998,190 @@ function PracticePortalContent() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap mb-2">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1C1C1C] border border-[#303030] text-[#A3A3A3]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFFFFF]"></span>
-                  Step 2 of 3
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  Step 2 of 4 • Topic Selection
                 </span>
                 <span className="text-xs px-2.5 py-1 rounded-full bg-[#1C1C1C] border border-[#303030] text-[#FFFFFF] font-semibold">
-                  Subject: <strong className="text-[#FFFFFF]">{activeSubject.name}</strong>
+                  Subject: <strong className="text-white">{activeSubject.name}</strong>
                 </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-[#FFFFFF] tracking-tight">
+                Choose Topic ({activeSubject.name})
+              </h1>
+              <p className="text-sm text-[#A3A3A3]">
+                Select a specific topic (e.g. <strong>Blood Relations</strong>) or choose <strong>All Topics</strong> for a mixed syllabus drill.
+              </p>
+            </div>
+
+            {/* Topic Selection Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Option 0: All Topics / Mixed Practice */}
+              <div
+                onClick={() => setSelectedTopic('all')}
+                className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between text-left group ${
+                  selectedTopic === 'all'
+                    ? 'bg-[#1C1C1C] text-[#FAFAFA] border-2 border-amber-400 shadow-xl ring-1 ring-amber-400/20'
+                    : 'bg-[#141414] text-[#FAFAFA] border-[#262626] hover:bg-[#1A1A1A] hover:border-[#383838]'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          selectedTopic === 'all' ? 'border-amber-400' : 'border-[#52525B]'
+                        }`}
+                      >
+                        {selectedTopic === 'all' && <span className="w-2 h-2 rounded-full bg-amber-400"></span>}
+                      </span>
+                      <span className="text-xs font-mono uppercase font-bold text-amber-300">
+                        Mixed Practice
+                      </span>
+                    </div>
+
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-[#252525] text-white border border-[#333333]">
+                      {subjectTestCounts[selectedSubjectId] || assessments.length} Tests
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors">
+                    All Topics / Full Syllabus Drill (सम्पूर्ण विषय)
+                  </h3>
+                  <div className="text-xs text-[#A1A1AA] font-medium mb-1">
+                    विषय के सभी अध्यायों से मिश्रित अभ्यास प्रश्न
+                  </div>
+                  <p className="text-xs text-[#71717A] leading-relaxed">
+                    Practice all topics combined together to build speed and comprehensive mastery across {activeSubject.name}.
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#262626] flex items-center justify-between text-xs font-bold text-[#A1A1AA]">
+                  <span>{selectedTopic === 'all' ? '✓ Selected' : 'Click to select all topics'}</span>
+                  <Icons.ChevronRight size={14} />
+                </div>
+              </div>
+
+              {/* Specific Topics */}
+              {availableTopics.map((top) => {
+                const isSelected = selectedTopic === top.name
+                const count = topicTestCounts[top.name] || 0
+
+                return (
+                  <div
+                    key={top.id}
+                    onClick={() => setSelectedTopic(top.name)}
+                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between text-left group ${
+                      isSelected
+                        ? 'bg-[#1C1C1C] text-[#FAFAFA] border-2 border-amber-400 shadow-xl ring-1 ring-amber-400/20'
+                        : 'bg-[#141414] text-[#FAFAFA] border-[#262626] hover:bg-[#1A1A1A] hover:border-[#383838]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                              isSelected ? 'border-amber-400' : 'border-[#52525B]'
+                            }`}
+                          >
+                            {isSelected && <span className="w-2 h-2 rounded-full bg-amber-400"></span>}
+                          </span>
+                          <span className="text-xs font-mono uppercase font-bold text-[#A1A1AA]">
+                            #{top.id}
+                          </span>
+                        </div>
+
+                        <span
+                          className={`text-xs font-mono font-bold px-2 py-0.5 rounded-md ${
+                            count > 0
+                              ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40'
+                              : 'bg-[#202020] text-[#71717A] border border-[#2E2E2E]'
+                          }`}
+                        >
+                          {count} {count === 1 ? 'Test' : 'Tests'}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors">
+                        {top.name}
+                      </h3>
+                      {top.hindiName && (
+                        <div className="text-xs text-[#A1A1AA] font-medium mb-1">
+                          {top.hindiName}
+                        </div>
+                      )}
+                      <p className="text-xs text-[#71717A] leading-relaxed line-clamp-2">
+                        {top.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-[#262626] flex items-center justify-between text-xs font-bold text-[#A1A1AA]">
+                      <span>{isSelected ? '✓ Selected' : 'Click to select topic'}</span>
+                      <Icons.ChevronRight size={14} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-4 border-t border-[#2A2A2A] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={handleBackToStep1}
+                className="px-5 py-3 rounded-xl bg-[#1C1C1C] border border-[#303030] text-[#FFFFFF] hover:bg-[#292929] transition-all font-bold text-sm flex items-center gap-2 cursor-pointer"
+              >
+                <span>← Back to Subjects</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleProceedToStep3()}
+                className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-sm transition-all flex items-center gap-2 shadow-md cursor-pointer"
+              >
+                <span>Continue to Difficulty Level</span>
+                <Icons.ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* STEP 3: CHOOSE DIFFICULTY LEVEL                               */}
+        {/* ------------------------------------------------------------- */}
+        {currentStep === 3 && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Step Header */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1C1C1C] border border-[#303030] text-[#A3A3A3]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFFFFF]"></span>
+                  Step 3 of 4 • Difficulty Level
+                </span>
+                <button
+                  type="button"
+                  onClick={handleBackToStep1}
+                  className="text-xs px-2.5 py-0.5 rounded-full bg-[#1C1C1C] border border-[#303030] text-[#FFFFFF] font-semibold hover:border-white transition-colors"
+                >
+                  Subject: {activeSubject.name} ✎
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBackToStep2}
+                  className="text-xs px-2.5 py-0.5 rounded-full bg-[#1C1C1C] border border-[#303030] text-amber-300 font-semibold hover:border-amber-400 transition-colors"
+                >
+                  Topic: {selectedTopic === 'all' ? 'All Topics' : selectedTopic} ✎
+                </button>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#FFFFFF] tracking-tight">
                 Choose Difficulty Level
               </h1>
               <p className="text-sm text-[#A3A3A3]">
-                Select the difficulty level for your practice in {activeSubject.name}.
+                Select the target difficulty level for {selectedTopic === 'all' ? activeSubject.name : selectedTopic}.
               </p>
             </div>
 
-            {/* 3 Large Difficulty Cards (Desktop: 3 cols, Mobile: stacked) */}
+            {/* 3 Large Difficulty Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {DIFFICULTY_OPTIONS.map((diff) => {
                 const isSelected = selectedDifficulty === diff.id
@@ -725,7 +1198,6 @@ function PracticePortalContent() {
                     }`}
                   >
                     <div>
-                      {/* Top Header: Radio / Badge & Count */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                           <span
@@ -751,39 +1223,20 @@ function PracticePortalContent() {
                               : 'bg-[#1E1E1E] text-[#A1A1AA] border border-[#2B2B2B]'
                           }`}
                         >
-                          {loading ? (
-                            <span className="inline-block w-12 h-3 bg-[#333333] rounded animate-pulse" />
-                          ) : (
-                            `${testCount} Tests`
-                          )}
+                          {testCount} Tests
                         </span>
                       </div>
 
-                      {/* Difficulty Title */}
-                      <h3
-                        className="text-xl font-black mb-1 text-[#FFFFFF]"
-                      >
-                        {diff.name}
-                      </h3>
-                      <div
-                        className={`text-xs font-bold mb-3 ${
-                          isSelected ? 'text-[#D4D4D8]' : 'text-[#A1A1AA]'
-                        }`}
-                      >
+                      <h3 className="text-xl font-black mb-1 text-[#FFFFFF]">{diff.name}</h3>
+                      <div className={`text-xs font-bold mb-3 ${isSelected ? 'text-[#D4D4D8]' : 'text-[#A1A1AA]'}`}>
                         {diff.subtitle}
                       </div>
 
-                      {/* Description */}
-                      <p
-                        className={`text-xs leading-relaxed ${
-                          isSelected ? 'text-[#E4E4E7]' : 'text-[#71717A]'
-                        }`}
-                      >
+                      <p className={`text-xs leading-relaxed ${isSelected ? 'text-[#E4E4E7]' : 'text-[#71717A]'}`}>
                         {diff.description}
                       </p>
                     </div>
 
-                    {/* Bottom Status Tag */}
                     <div className={`mt-6 pt-3 border-t flex items-center justify-between text-xs font-bold ${
                       isSelected ? 'border-[#383838] text-white' : 'border-[#262626] text-[#71717A]'
                     }`}>
@@ -795,23 +1248,23 @@ function PracticePortalContent() {
               })}
             </div>
 
-            {/* Bottom Actions: Back and Continue Buttons */}
+            {/* Bottom Actions */}
             <div className="pt-4 border-t border-[#2A2A2A] flex items-center justify-between">
               <button
                 type="button"
-                onClick={handleBackToStep1}
+                onClick={handleBackToStep2}
                 className="px-5 py-3 rounded-xl bg-[#1C1C1C] border border-[#303030] text-[#FFFFFF] hover:bg-[#292929] transition-all font-bold text-sm flex items-center gap-2 cursor-pointer"
               >
-                <span>← Back to Subject</span>
+                <span>← Back to Topic Choice</span>
               </button>
 
               <button
                 type="button"
-                onClick={handleProceedToStep3}
+                onClick={() => handleProceedToStep4()}
                 disabled={!selectedDifficulty}
-                className="px-6 py-3 rounded-xl bg-[#D4D4D8] hover:bg-[#E4E4E7] text-[#111111] font-bold text-sm transition-all flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-3 rounded-xl bg-white hover:bg-[#E4E4E7] text-black font-extrabold text-sm transition-all flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <span>Continue to Step 3</span>
+                <span>Show Practice Tests</span>
                 <Icons.ChevronRight size={16} />
               </button>
             </div>
@@ -819,9 +1272,9 @@ function PracticePortalContent() {
         )}
 
         {/* ------------------------------------------------------------- */}
-        {/* STEP 3: CHOOSE PRACTICE TEST (केवल टेस्ट लिस्ट स्क्रीन)        */}
+        {/* STEP 4: SELECT PRACTICE TEST (फाइनल टेस्ट लिस्ट स्क्रीन)     */}
         {/* ------------------------------------------------------------- */}
-        {currentStep === 3 && (
+        {currentStep === 4 && (
           <div className="space-y-6 animate-fadeIn">
             {/* Step Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -830,7 +1283,7 @@ function PracticePortalContent() {
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1C1C1C] border border-[#303030] text-[#A3A3A3]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#FFFFFF]"></span>
-                    Step 3 of 3
+                    Step 4 of 4 • Test Drills
                   </span>
                   <button
                     type="button"
@@ -842,6 +1295,13 @@ function PracticePortalContent() {
                   <button
                     type="button"
                     onClick={handleBackToStep2}
+                    className="text-xs px-2.5 py-0.5 rounded-full bg-[#1C1C1C] border border-[#303030] text-amber-300 hover:text-white cursor-pointer"
+                  >
+                    Topic: <strong className="text-white">{selectedTopic === 'all' ? 'All Topics' : selectedTopic}</strong> ✎
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBackToStep3}
                     className="text-xs px-2.5 py-0.5 rounded-full bg-[#1C1C1C] border border-[#303030] text-[#A3A3A3] hover:text-[#FFFFFF] cursor-pointer uppercase"
                   >
                     Level: <strong className="text-[#FFFFFF]">{selectedDifficulty}</strong> ✎
@@ -849,7 +1309,7 @@ function PracticePortalContent() {
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-black text-[#FFFFFF] tracking-tight">
-                  {activeSubject.name} — {selectedDifficulty ? selectedDifficulty.toUpperCase() : 'ALL'} Practice Tests
+                  {selectedTopic !== 'all' ? selectedTopic : activeSubject.name} — Practice Tests
                 </h1>
                 <p className="text-sm text-[#A3A3A3]">
                   Select any drill to launch the distraction-free exam portal.
@@ -858,220 +1318,151 @@ function PracticePortalContent() {
 
               {/* Quick Search Input */}
               <div className="relative min-w-[220px]">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#737373]">
-                  <Icons.Search size={14} />
-                </div>
+                <Icons.Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373]" size={15} />
                 <input
                   type="text"
-                  placeholder="Filter drills..."
+                  placeholder="Search drills..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-[#171717] border border-[#303030] text-[#FFFFFF] placeholder-[#737373] focus:outline-none focus:border-[#FFFFFF] font-medium"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#303030] bg-[#141414] text-xs text-[#FFFFFF] placeholder-[#737373] focus:outline-none focus:border-[#555555]"
                 />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#737373] hover:text-[#FFFFFF] text-xs"
-                  >
-                    ✕
-                  </button>
-                )}
               </div>
             </div>
 
-            {/* Test Count Badge */}
-            <div className="flex items-center justify-between text-xs text-[#737373] pb-2 border-b border-[#2A2A2A]">
-              <span>
-                {loading ? (
-                  <span className="inline-block w-32 h-3.5 bg-[#262626] rounded animate-pulse" />
-                ) : (
-                  <>
-                    Showing <strong className="text-[#FFFFFF]">{finalFilteredAssessments.length}</strong> available practice drills
-                  </>
-                )}
-              </span>
-              <button
-                type="button"
-                onClick={handleBackToStep2}
-                className="text-[#A3A3A3] hover:text-[#FFFFFF] underline font-semibold cursor-pointer"
-              >
-                Change Difficulty Level
-              </button>
-            </div>
-
-            {/* Empty State vs 2-Column Test Grid */}
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-pulse">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-64 rounded-2xl bg-[#1C1C1C] border border-[#303030] p-6 space-y-4" />
-                ))}
-              </div>
-            ) : finalFilteredAssessments.length === 0 ? (
-              <div className="p-12 text-center bg-[#1C1C1C] rounded-2xl border border-[#303030] space-y-4">
-                <ExamForgeLogo variant="badge" size={24} className="w-12 h-12 rounded-2xl mx-auto border-[#303030]" />
-                <h3 className="text-base font-bold text-[#FFFFFF]">
-                  No Practice Tests Found
-                </h3>
-                <p className="text-xs text-[#A3A3A3] max-w-md mx-auto leading-relaxed">
-                  No mock test matched <strong>{activeSubject.name}</strong> under the <strong>{selectedDifficulty?.toUpperCase()}</strong> difficulty level.
-                </p>
-                <div className="flex items-center justify-center gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleBackToStep2}
-                    className="px-4 py-2 rounded-xl bg-[#FFFFFF] text-[#111111] text-xs font-bold hover:bg-[#E5E5E5] transition-colors cursor-pointer"
-                  >
-                    Select Another Difficulty
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleBackToStep1}
-                    className="px-4 py-2 rounded-xl bg-[#222222] border border-[#303030] text-[#FFFFFF] text-xs font-bold hover:bg-[#292929] transition-colors cursor-pointer"
-                  >
-                    Change Subject
-                  </button>
+            {/* List of Practice Tests */}
+            <div className="space-y-4">
+              {finalFilteredAssessments.length === 0 ? (
+                <div className="p-12 text-center text-[#737373] bg-[#141414] rounded-2xl border border-[#262626] space-y-3">
+                  <div className="text-3xl">📝</div>
+                  <h3 className="text-base font-bold text-[#FFFFFF]">No tests match your selected criteria</h3>
+                  <p className="text-xs text-[#A3A3A3] max-w-md mx-auto">
+                    Try choosing a different topic, difficulty level, or clearing your search term.
+                  </p>
+                  <div className="flex items-center justify-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleBackToStep2()}
+                      className="px-4 py-2 rounded-xl bg-[#202020] border border-[#303030] text-xs font-semibold text-[#FFFFFF] hover:bg-[#282828]"
+                    >
+                      Change Topic
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBackToStep3()}
+                      className="px-4 py-2 rounded-xl bg-white text-xs font-semibold text-black hover:bg-[#E5E5E5]"
+                    >
+                      Change Difficulty
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              /* Two-Column Grid on Desktop, Single-Column on Mobile */
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {finalFilteredAssessments.map((test) => {
-                  const diffKey = normalizeDiff(test.difficulty_level)
+              ) : (
+                finalFilteredAssessments.map((test) => {
+                  const diffColor =
+                    normalizeDiff(test.difficulty_level) === 'hard'
+                      ? 'bg-rose-950/40 text-rose-300 border-rose-800/40'
+                      : normalizeDiff(test.difficulty_level) === 'easy'
+                      ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/40'
+                      : 'bg-amber-950/40 text-amber-300 border-amber-800/40'
 
                   return (
                     <div
                       key={test.id}
-                      className="rounded-2xl bg-[#1C1C1C] border border-[#303030] p-6 hover:bg-[#222222] hover:border-[#404040] transition-all flex flex-col justify-between group space-y-5"
+                      className="p-5 rounded-2xl bg-[#141414] border border-[#262626] hover:border-[#3F3F46] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                     >
-                      <div className="space-y-3">
-                        {/* Top Badges: Difficulty & Subject Code */}
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#222222] text-[#FFFFFF] border border-[#303030]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#FFFFFF]"></span>
-                            {diffKey === 'easy' ? 'Easy (सरल)' : diffKey === 'hard' ? 'Hard (कठिन)' : 'Medium (मध्यम)'}
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded border ${diffColor}`}>
+                            {test.difficulty_level || 'medium'}
                           </span>
-
-                          <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-[#171717] text-[#A3A3A3] border border-[#303030]">
-                            {test.subject_code || (test.subject_name ? test.subject_name.substring(0, 10) : 'MOCK')}
+                          <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-[#1C1C1C] text-[#FAFAFA] border border-[#2E2E2E]">
+                            {test.assessment_type}
                           </span>
+                          {test.subject_name && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-[#1C1C1C] text-[#A1A1AA] border border-[#262626]">
+                              {test.subject_name}
+                            </span>
+                          )}
+                          {test.main_topic_name && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                              {test.main_topic_name}
+                            </span>
+                          )}
+                          {test.topic_name && test.topic_name !== test.main_topic_name && (
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1A1A1A] text-[#71717A] border border-[#262626]">
+                              {test.topic_name}
+                            </span>
+                          )}
                         </div>
 
-                        {/* Test Title */}
-                        <h3 className="text-base sm:text-lg font-extrabold text-[#FFFFFF] leading-snug group-hover:text-[#FFFFFF]">
+                        <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
                           {test.title}
                         </h3>
 
-                        {/* Description */}
                         <p className="text-xs text-[#A3A3A3] line-clamp-2 leading-relaxed">
-                          {test.description || 'Full syllabus practice test for Rajasthan Informatics Assistant.'}
+                          {test.description || 'Practice test with selected syllabus questions.'}
                         </p>
 
-                        {/* Subject Tag */}
-                        {test.subject_name && (
-                          <div className="text-[11px] font-semibold text-[#737373] flex items-center gap-1.5 pt-1">
-                            <Icons.Subjects size={13} className="shrink-0 text-[#737373]" />
-                            <span className="truncate">{test.subject_name}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-4 text-xs font-mono text-[#737373] pt-1">
+                          <span>Questions: <strong className="text-[#FAFAFA]">{test.total_questions}</strong></span>
+                          <span>Duration: <strong className="text-[#FAFAFA]">{test.duration_minutes}m</strong></span>
+                          <span>Marks: <strong className="text-[#FAFAFA]">{Number(test.total_marks || 0).toFixed(0)}</strong></span>
+                          <span>Passing: <strong className="text-[#FAFAFA]">{test.passing_percentage}%</strong></span>
+                        </div>
                       </div>
 
-                      {/* Footer Specifications & Action Button */}
-                      <div className="pt-4 border-t border-[#2A2A2A] space-y-4">
-                        {/* Test Statistics Card */}
-                        <div className="grid grid-cols-4 gap-2 text-center text-xs bg-[#171717] rounded-xl p-2.5 border border-[#303030]">
-                          <div>
-                            <div className="font-mono font-black text-[#FFFFFF]">{test.total_questions}</div>
-                            <div className="text-[9px] uppercase text-[#737373] font-semibold">Questions</div>
-                          </div>
-                          <div>
-                            <div className="font-mono font-black text-[#FFFFFF]">{test.duration_minutes}m</div>
-                            <div className="text-[9px] uppercase text-[#737373] font-semibold">Duration</div>
-                          </div>
-                          <div>
-                            <div className="font-mono font-black text-[#FFFFFF]">{Number(test.total_marks || 0).toFixed(0)}</div>
-                            <div className="text-[9px] uppercase text-[#737373] font-semibold">Marks</div>
-                          </div>
-                          <div>
-                            <div className="font-mono font-black text-[#FFFFFF]">-0.25</div>
-                            <div className="text-[9px] uppercase text-[#737373] font-semibold">Negative</div>
-                          </div>
-                        </div>
-
-                        {/* Start Practice Test Button */}
+                      <div className="flex items-center gap-2 shrink-0">
                         <Link
                           href={`/practice/${test.id}`}
-                          onClick={() => {
-                            if (currentStudent && typeof window !== 'undefined') {
-                              localStorage.setItem('examforge_current_student', JSON.stringify(currentStudent))
-                            }
-                          }}
-                          className="w-full py-3 rounded-xl bg-[#D4D4D8] hover:bg-[#E4E4E7] text-[#111111] font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                          className="px-5 py-3 rounded-xl bg-white hover:bg-[#E5E5E5] text-black font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md"
                         >
-                          <span>Start Practice Test</span>
-                          <Icons.ChevronRight size={15} />
+                          <span>Start Test</span>
+                          <Icons.ChevronRight size={14} />
                         </Link>
                       </div>
                     </div>
                   )
-                })}
-              </div>
-            )}
+                })
+              )}
+            </div>
 
-            {/* Step 3 Navigation: Back to Step 2 */}
+            {/* Bottom Actions */}
             <div className="pt-4 border-t border-[#2A2A2A] flex items-center justify-between">
               <button
                 type="button"
-                onClick={handleBackToStep2}
+                onClick={handleBackToStep3}
                 className="px-5 py-3 rounded-xl bg-[#1C1C1C] border border-[#303030] text-[#FFFFFF] hover:bg-[#292929] transition-all font-bold text-sm flex items-center gap-2 cursor-pointer"
               >
                 <span>← Back to Difficulty Level</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleBackToStep1}
-                className="px-4 py-2.5 rounded-xl text-xs text-[#A3A3A3] hover:text-[#FFFFFF] transition-colors cursor-pointer"
-              >
-                Choose Different Subject
               </button>
             </div>
           </div>
         )}
       </main>
 
-      {/* Saved Bookmarks Manager Modal */}
+      {/* Bookmarks Modal */}
       {currentStudent && (
         <BookmarkModal
           isOpen={showBookmarksModal}
           onClose={() => setShowBookmarksModal(false)}
           studentId={currentStudent.id}
-          onBookmarkRemoved={() => setBookmarkCount((c) => Math.max(0, c - 1))}
         />
       )}
 
-      {/* Student Completed Results Modal */}
+      {/* Student Results Modal */}
       {currentStudent && (
         <StudentResultsModal
           isOpen={showResultsModal}
           onClose={() => setShowResultsModal(false)}
           studentId={currentStudent.id}
-          studentName={currentStudent.full_name}
         />
       )}
     </div>
   )
 }
 
-export default function StudentPracticePortalPage() {
+export default function PracticePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#101010] text-[#FFFFFF] flex items-center justify-center p-6">
-          <div className="w-8 h-8 border-2 border-[#FFFFFF] border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="p-8 text-center text-xs text-[#71717A]">Loading Practice Portal...</div>}>
       <PracticePortalContent />
     </Suspense>
   )
