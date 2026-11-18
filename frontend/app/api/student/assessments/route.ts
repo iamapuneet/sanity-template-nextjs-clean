@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const subjectId = searchParams.get('subject_id')
+    const topicId = searchParams.get('topic_id')
+    const mainTopicId = searchParams.get('main_topic_id')
     const type = searchParams.get('type')
     const difficulty = searchParams.get('difficulty')
 
@@ -35,12 +37,26 @@ export async function GET(req: NextRequest) {
           a.passing_percentage,
           COALESCE(a.difficulty_level, 'medium') as difficulty_level,
           a.subject_id,
+          a.topic_id,
           s.name as subject_name,
           s.code as subject_code,
+          t.name as topic_name,
+          COALESCE(
+            CASE WHEN t.level = 1 THEN t.id WHEN p1.level = 1 THEN p1.id ELSE p2.id END,
+            t.id
+          ) as main_topic_id,
+          COALESCE(
+            CASE WHEN t.level = 1 THEN t.name WHEN p1.level = 1 THEN p1.name ELSE p2.name END,
+            t.name,
+            'General Mock Tests'
+          ) as main_topic_name,
           e.name as exam_name,
           'assigned' as assignment_status
         FROM assessments a
         LEFT JOIN subjects s ON a.subject_id = s.id
+        LEFT JOIN topics t ON a.topic_id = t.id
+        LEFT JOIN topics p1 ON t.parent_id = p1.id
+        LEFT JOIN topics p2 ON p1.parent_id = p2.id
         LEFT JOIN exams e ON a.exam_id = e.id
         WHERE a.status = 'published'
       `
@@ -59,8 +75,19 @@ export async function GET(req: NextRequest) {
           a.passing_percentage,
           COALESCE(a.difficulty_level, 'medium') as difficulty_level,
           a.subject_id,
+          a.topic_id,
           s.name as subject_name,
           s.code as subject_code,
+          t.name as topic_name,
+          COALESCE(
+            CASE WHEN t.level = 1 THEN t.id WHEN p1.level = 1 THEN p1.id ELSE p2.id END,
+            t.id
+          ) as main_topic_id,
+          COALESCE(
+            CASE WHEN t.level = 1 THEN t.name WHEN p1.level = 1 THEN p1.name ELSE p2.name END,
+            t.name,
+            'General Mock Tests'
+          ) as main_topic_name,
           e.name as exam_name,
           mta.assignment_status,
           mta.assigned_at,
@@ -79,6 +106,9 @@ export async function GET(req: NextRequest) {
         FROM assessments a
         JOIN mock_test_assignments mta ON a.id = mta.mock_test_id
         LEFT JOIN subjects s ON a.subject_id = s.id
+        LEFT JOIN topics t ON a.topic_id = t.id
+        LEFT JOIN topics p1 ON t.parent_id = p1.id
+        LEFT JOIN topics p2 ON p1.parent_id = p2.id
         LEFT JOIN exams e ON a.exam_id = e.id
         WHERE a.status = 'published' 
           AND mta.student_id = ? 
@@ -95,6 +125,16 @@ export async function GET(req: NextRequest) {
         query += ` AND a.subject_id = ?`
         params.push(subjectId)
       }
+    }
+
+    if (topicId && topicId !== 'all') {
+      query += ` AND a.topic_id = ?`
+      params.push(topicId)
+    }
+
+    if (mainTopicId && mainTopicId !== 'all') {
+      query += ` AND (t.id = ? OR p1.id = ? OR p2.id = ?)`
+      params.push(mainTopicId, mainTopicId, mainTopicId)
     }
 
     if (type && type !== 'all') {
