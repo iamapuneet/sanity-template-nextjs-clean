@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
+import Link from 'next/link'
 import Modal from '@/components/admin/Modal'
 import { Icons } from '@/components/admin/Icons'
 import { CardsGridSkeleton } from '@/app/components/Shimmer'
@@ -272,14 +273,23 @@ export default function TopicsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => handleOpenAdd(null)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FAFAFA] hover:bg-[#E4E4E7] text-[#090909] text-xs font-semibold transition-colors"
-        >
-          <Icons.Plus size={15} />
-          <span>Add Root Topic</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/study"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#181818] hover:bg-[#222222] text-[#FAFAFA] border border-[#2e2e2e] text-xs font-semibold transition-colors"
+          >
+            <Icons.BookOpen size={15} />
+            <span>Study Notes & Materials</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => handleOpenAdd(null)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FAFAFA] hover:bg-[#E4E4E7] text-[#090909] text-xs font-semibold transition-colors"
+          >
+            <Icons.Plus size={15} />
+            <span>Add Root Topic</span>
+          </button>
+        </div>
       </div>
 
       {/* Syllabus Completion Summary Card */}
@@ -648,6 +658,16 @@ export default function TopicsPage() {
                         <span>{node.is_completed ? 'Reset All' : 'All Subtopics Done'}</span>
                       </button>
                     )}
+
+                    {/* Study Notes Jump Button */}
+                    <Link
+                      href={`/admin/study?subject=${node.subject_id}&topic=${node.id}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#161616] hover:bg-[#202020] hover:text-[#FAFAFA] text-[#A1A1AA] border border-[#262626] text-xs font-medium transition-colors"
+                      title="Open Study Notes & Materials for this topic"
+                    >
+                      <Icons.BookOpen size={13} />
+                      <span className="hidden md:inline">Notes</span>
+                    </Link>
 
                     {/* Add nested subtopic */}
                     <button

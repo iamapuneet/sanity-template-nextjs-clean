@@ -50,6 +50,14 @@ export default async function Header() {
             >
               <li>
                 <Link
+                  href="/study"
+                  className="px-3.5 py-2 rounded-xl bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-white font-medium text-xs transition-all flex items-center gap-1.5"
+                >
+                  <span>📖 Study Notes</span>
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/practice"
                   className="px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs shadow-xs transition-all flex items-center gap-1.5"
                 >

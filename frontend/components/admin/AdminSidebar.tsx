@@ -44,6 +44,12 @@ export default function AdminSidebar({
       icon: Icons.Topics,
     },
     {
+      label: 'Study Notes & Topics',
+      href: '/admin/study',
+      icon: Icons.BookOpen,
+      badge: 'Notes',
+    },
+    {
       label: 'Topic Calendar',
       href: '/admin/calendar',
       icon: Icons.Calendar,

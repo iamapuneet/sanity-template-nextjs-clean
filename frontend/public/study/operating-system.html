@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="hi-en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operating System Notes (Hinglish) | RTU Kota</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --text:#1e293b; --muted:#64748b; --line:#dbe2ee;
+  --brand:#1f3a8a; --brand2:#3b82f6; --side:#0f1f4d; --sidetext:#cbd5e1;
+  --def:#eef2ff; --defb:#4f46e5; --imp:#fff7e0; --impb:#f59e0b; --exam:#ecfdf5; --examb:#059669;
+  --ex:#fdf2f8; --exb:#db2777; --code:#f1f5f9; --codetext:#0f172a; --svgline:#475569;
+}
+body.dark{
+  --bg:#0b1220; --panel:#111a2e; --text:#e2e8f0; --muted:#94a3b8; --line:#26324d;
+  --brand:#93c5fd; --brand2:#60a5fa; --side:#070d1a; --sidetext:#94a3b8;
+  --def:#1b2347; --defb:#818cf8; --imp:#33280d; --impb:#fbbf24; --exam:#0b2a22; --examb:#34d399;
+  --ex:#34132a; --exb:#f472b6; --code:#0a1020; --codetext:#e2e8f0; --svgline:#94a3b8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:16px}
+#topbar{position:fixed;top:0;left:0;right:0;height:56px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 16px;z-index:50}
+#topbar h1{font-size:17px;margin:0;color:var(--brand);white-space:nowrap}
+#search{flex:1;max-width:420px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--brand2)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+body.dark .btn.primary{color:#0b1220}
+#menuBtn{display:none}
+#progressWrap{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--line);z-index:50}
+#progressBar{height:3px;width:0;background:linear-gradient(90deg,#22c55e,#3b82f6);transition:width .3s}
+#sidebar{position:fixed;top:59px;bottom:0;left:0;width:300px;background:var(--side);color:var(--sidetext);overflow-y:auto;padding:14px 10px 40px;z-index:40}
+#sidebar .u{margin:14px 6px 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7dd3fc;font-weight:700}
+#sidebar a{display:block;color:var(--sidetext);text-decoration:none;padding:5px 10px;border-radius:6px;font-size:13.5px;border-left:3px solid transparent}
+#sidebar a:hover{background:rgba(255,255,255,.07)}
+#sidebar a.active{background:rgba(59,130,246,.22);color:#fff;border-left-color:#60a5fa}
+#sidebar a.done::after{content:" \2713";color:#4ade80}
+#sidebar a.hide{display:none}
+main{margin-left:300px;padding:84px 32px 80px;max-width:1100px}
+.hero{background:linear-gradient(135deg,#1f3a8a,#3b82f6);color:#fff;border-radius:16px;padding:28px 30px;margin-bottom:24px}
+.hero h2{margin:0 0 6px;font-size:28px}
+.hero p{margin:4px 0;opacity:.95}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{background:rgba(255,255,255,.18);padding:4px 12px;border-radius:99px;font-size:13px}
+.unit-banner{background:var(--brand);color:#fff;border-radius:12px;padding:16px 22px;margin:48px 0 16px}
+body.dark .unit-banner{color:#0b1220}
+.unit-banner h2{margin:0;font-size:24px}
+.unit-banner p{margin:4px 0 0;font-size:14px;opacity:.9}
+section.topic{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin:18px 0}
+section.topic.dim{opacity:.25}
+section.topic > h3{margin:0 0 10px;font-size:21px;color:var(--brand);border-bottom:2px solid var(--line);padding-bottom:8px}
+section.topic h4{margin:20px 0 6px;font-size:17px;color:var(--brand2)}
+section.topic h5{margin:14px 0 4px;font-size:15px}
+p{margin:8px 0}
+ul,ol{margin:6px 0 10px 22px;padding:0}
+li{margin:3px 0}
+.box{border-left:5px solid;border-radius:8px;padding:10px 14px;margin:12px 0}
+.box b.t{display:block;margin-bottom:2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.def{background:var(--def);border-color:var(--defb)} .def b.t{color:var(--defb)}
+.imp{background:var(--imp);border-color:var(--impb)} .imp b.t{color:var(--impb)}
+.exam{background:var(--exam);border-color:var(--examb)} .exam b.t{color:var(--examb)}
+.ex{background:var(--ex);border-color:var(--exb)} .ex b.t{color:var(--exb)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--def);white-space:nowrap}
+code{font-family:Consolas,"Courier New",monospace;background:var(--code);color:var(--codetext);padding:1px 6px;border-radius:4px;font-size:.92em}
+pre{background:var(--code);color:var(--codetext);padding:12px 16px;border-radius:8px;overflow-x:auto;font-size:13.5px;line-height:1.5;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+.fig{margin:14px 0;text-align:center}
+.fig svg{max-width:100%;height:auto}
+.fig .cap{font-size:13px;color:var(--muted);margin-top:4px}
+svg text{fill:#1e293b;font-family:"Segoe UI",Arial,sans-serif}
+svg text:not([font-size]){font-size:12.5px}
+.fig svg{overflow:visible}
+svg .lt{fill:var(--text)} svg .mt{fill:var(--muted)}
+svg .ln{stroke:var(--svgline);fill:none;stroke-width:2}
+svg .ar{stroke:var(--svgline);fill:none;stroke-width:2;marker-end:url(#arr)}
+svg .b{font-weight:700}
+svg .c1{fill:#dbeafe;stroke:#3b82f6;stroke-width:2} svg .c2{fill:#dcfce7;stroke:#22c55e;stroke-width:2}
+svg .c3{fill:#fef3c7;stroke:#f59e0b;stroke-width:2} svg .c4{fill:#fce7f3;stroke:#ec4899;stroke-width:2}
+svg .c5{fill:#ede9fe;stroke:#8b5cf6;stroke-width:2} svg .c6{fill:#fee2e2;stroke:#ef4444;stroke-width:2}
+svg .c7{fill:#e2e8f0;stroke:#64748b;stroke-width:2}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;background:var(--def);color:var(--defb);font-weight:700;margin-left:6px;vertical-align:middle}
+.markdone{margin-top:14px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none}
+.markdone input{margin-right:6px;transform:scale(1.2)}
+.qa{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--bg)}
+.qa summary{cursor:pointer;padding:10px 14px;font-weight:600}
+.qa summary .m{display:inline-block;min-width:44px;font-size:11px;background:var(--brand);color:#fff;border-radius:99px;padding:1px 8px;margin-right:8px;text-align:center}
+body.dark .qa summary .m{color:#0b1220}
+.qa .ans{padding:4px 16px 12px;border-top:1px dashed var(--line)}
+.sim{background:var(--bg);border:1px dashed var(--brand2);border-radius:12px;padding:14px;margin:14px 0}
+.sim h5{margin:0 0 8px;font-size:16px;color:var(--brand)}
+.sim input,.sim select,.sim textarea{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:14px;font-family:inherit}
+.sim input[type=number]{width:64px}
+.sim textarea{width:100%;font-family:Consolas,monospace}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.gantt{display:flex;margin:8px 0;overflow-x:auto;padding-bottom:20px}
+.gantt .g{min-width:38px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;position:relative;border-right:2px solid var(--bg)}
+.gantt .g small{position:absolute;bottom:-18px;left:-4px;color:var(--muted);font-weight:400;font-size:11px}
+.gantt .g small.e{left:auto;right:-4px}
+.fault{background:#fecaca;color:#7f1d1d} .hit{background:#bbf7d0;color:#14532d}
+.pr td{text-align:center;min-width:34px;color:var(--text)}
+.quiz .q{margin:12px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.quiz label{display:block;padding:3px 6px;border-radius:6px;cursor:pointer}
+.quiz label:hover{background:var(--def)}
+.quiz .ok{background:#bbf7d0!important;color:#14532d} .quiz .bad{background:#fecaca!important;color:#7f1d1d}
+.score{font-weight:700;font-size:18px;margin-top:8px}
+.nomatch{display:none;text-align:center;color:var(--muted);padding:30px}
+footer{margin-left:300px;padding:20px 32px 40px;color:var(--muted);font-size:13px}
+@media (max-width:900px){
+  #sidebar{transform:translateX(-100%);transition:transform .25s}
+  #sidebar.open{transform:none}
+  main,footer{margin-left:0;padding-left:14px;padding-right:14px}
+  #menuBtn{display:inline-block}
+  #topbar h1{display:none}
+}
+@media print{
+  #topbar,#progressWrap,#sidebar,.markdone,.sim,.btn{display:none!important}
+  main,footer{margin:0;padding:0;max-width:none}
+  body{background:#fff;color:#000} section.topic{break-inside:avoid-page}
+  details.qa{open:true}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<marker id="arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#475569"/></marker>
+</defs></svg>
+
+<div id="topbar">
+  <button class="btn" id="menuBtn">&#9776; Menu</button>
+  <h1>OS Notes | RTU Kota</h1>
+  <input id="search" type="search" placeholder="Topic search karo (jaise: deadlock, paging, inode, grep)...">
+  <button class="btn" id="expandBtn" title="Sab predicted questions ke answers kholo/band karo">Q&amp;A Toggle</button>
+  <button class="btn" id="themeBtn">&#9790; Dark</button>
+  <button class="btn primary" onclick="window.print()">Print / PDF</button>
+</div>
+<div id="progressWrap"><div id="progressBar"></div></div>
+
+<nav id="sidebar"></nav>
+
+<main id="main">
+<div class="hero">
+  <h2>Operating System: Complete Exam Notes</h2>
+  <p>Rajasthan Technical University (RTU), Kota syllabus ke hisaab se, simple Hinglish mein.</p>
+  <p>Har topic mein: definition, diagram, example, exam points aur predicted questions.</p>
+  <div class="chips">
+    <span class="chip">Unit 1: Introduction &amp; Process Mgmt</span>
+    <span class="chip">Unit 2: Sync, Deadlock &amp; Memory</span>
+    <span class="chip">Unit 3: Linux Basics</span>
+    <span class="chip">Unit 4: Shell Programming</span>
+    <span class="chip">Unit 5: Linux Administration</span>
+  </div>
+  <p style="margin-top:14px;font-size:14px">Tips: Left menu se topic chuno. "Maine padh liya" tick karo, progress bar upar chalega. Simulators aur MCQ quiz khud try karo.</p>
+</div>
+<div class="nomatch" id="nomatch">Koi topic match nahi hua. Dusra keyword try karo.</div>
+
+<!-- ================= UNIT 1 ================= -->
+<div class="unit-banner" data-unit="Unit 1: Introduction &amp; Process Mgmt" id="unit1">
+  <h2>Unit 1: Introduction &amp; Process Management</h2>
+  <p>OS types, structure, services, system calls, boot, process, threads, IPC, CPU scheduling</p>
+</div>
+
+<section class="topic" id="u1-intro" data-title="1.1 OS Definition aur Types">
+<h3>1.1 Operating System: Definition aur Types</h3>
+<div class="def"><b class="t">Definition</b>
+Operating System (OS) ek <b>system software</b> hai jo <b>computer hardware aur user ke beech interface</b> ka kaam karta hai. Ye hardware resources (CPU, memory, I/O, disk) ko manage karta hai aur application programs ko run karne ka environment deta hai.</div>
+
+<div class="fig">
+<svg viewBox="0 0 520 250" width="520">
+  <rect x="110" y="10" width="300" height="42" rx="8" class="c3"/><text x="260" y="36" text-anchor="middle" class="b">Users (Aap, Admin, Programs)</text>
+  <rect x="110" y="66" width="300" height="42" rx="8" class="c4"/><text x="260" y="92" text-anchor="middle" class="b">Application Software (Word, Chrome, Games)</text>
+  <rect x="110" y="122" width="300" height="42" rx="8" class="c1"/><text x="260" y="148" text-anchor="middle" class="b">Operating System (Kernel + Shell + Services)</text>
+  <rect x="110" y="178" width="300" height="42" rx="8" class="c2"/><text x="260" y="204" text-anchor="middle" class="b">Hardware (CPU, RAM, Disk, I/O Devices)</text>
+  <path d="M90 30 V200" class="ar"/><text x="20" y="120" class="mt" font-size="12">Request</text>
+</svg>
+<div class="cap">Fig 1.1: Computer system ka layered view. OS beech mein "manager" hai.</div></div>
+
+<h4>OS ke Goals aur Functions</h4>
+<ul>
+<li><b>Convenience:</b> computer ko use karna aasaan banana.</li>
+<li><b>Efficiency:</b> hardware resources ka best use (CPU idle na rahe).</li>
+<li><b>Resource Manager:</b> CPU time, memory space, file storage, I/O devices ko programs mein baantna.</li>
+<li><b>Control Program:</b> programs ki galat/illegal activity rokna.</li>
+</ul>
+
+<h4>Types of Operating Systems</h4>
+<h5>1. Batch Operating System</h5>
+<p>Similar jobs ko ek <b>batch</b> mein jama karke operator computer ko ek saath dete hain. User aur computer ke beech <b>koi direct interaction nahi</b> hota.</p>
+<ul>
+<li><b>Fayde:</b> bade repetitive jobs ke liye acchha, CPU ka use better.</li>
+<li><b>Nuksan:</b> interactive nahi, ek job atak jaye to baaki wait karte hain, debugging mushkil, CPU idle hota hai jab job I/O mein hai.</li>
+<li><b>Example:</b> payroll, bank statements, IBM early mainframes.</li>
+</ul>
+<div class="fig">
+<svg viewBox="0 0 620 110" width="620">
+  <rect x="5" y="30" width="90" height="46" rx="8" class="c3"/><text x="50" y="58" text-anchor="middle" class="b">Jobs (Cards)</text>
+  <path d="M95 53 H135" class="ar"/>
+  <rect x="140" y="30" width="110" height="46" rx="8" class="c5"/><text x="195" y="58" text-anchor="middle" class="b">Operator: Batch</text>
+  <path d="M250 53 H290" class="ar"/>
+  <rect x="295" y="14" width="150" height="80" rx="8" class="c1"/><text x="370" y="40" text-anchor="middle" class="b">Computer</text><text x="370" y="62" text-anchor="middle" font-size="13">Job1 → Job2 → Job3</text><text x="370" y="80" text-anchor="middle" font-size="12">(ek ke baad ek)</text>
+  <path d="M445 53 H485" class="ar"/>
+  <rect x="490" y="30" width="110" height="46" rx="8" class="c2"/><text x="545" y="58" text-anchor="middle" class="b">Output</text>
+</svg><div class="cap">Fig 1.2: Batch system flow</div></div>
+
+<h5>2. Multiprogramming Operating System</h5>
+<p>Memory mein <b>ek se zyada programs</b> ek saath rakhe jate hain. Jab ek program I/O ke liye wait karta hai, CPU turant <b>dusre program</b> ko mil jata hai. Isse <b>CPU utilization</b> badhta hai.</p>
+<div class="fig">
+<svg viewBox="0 0 520 200" width="520">
+  <rect x="40" y="10" width="140" height="170" fill="none" class="ln"/>
+  <rect x="40" y="10" width="140" height="40" class="c7"/><text x="110" y="35" text-anchor="middle" class="b">Operating System</text>
+  <rect x="40" y="50" width="140" height="40" class="c1"/><text x="110" y="75" text-anchor="middle">Job 1 (Running)</text>
+  <rect x="40" y="90" width="140" height="40" class="c3"/><text x="110" y="115" text-anchor="middle">Job 2 (I/O wait)</text>
+  <rect x="40" y="130" width="140" height="50" class="c2"/><text x="110" y="160" text-anchor="middle">Job 3 (Ready)</text>
+  <text x="110" y="196" text-anchor="middle" class="lt" font-size="12">Main Memory</text>
+  <path d="M180 70 H250" class="ar"/>
+  <rect x="255" y="45" width="100" height="50" rx="8" class="c5"/><text x="305" y="75" text-anchor="middle" class="b">CPU</text>
+  <text x="380" y="62" class="lt" font-size="13">CPU kabhi khali nahi:</text>
+  <text x="380" y="82" class="lt" font-size="13">Job1 I/O mein gaya to</text>
+  <text x="380" y="102" class="lt" font-size="13">CPU Job3 ko mil jayega</text>
+</svg><div class="cap">Fig 1.3: Multiprogramming: memory mein multiple jobs</div></div>
+<div class="imp"><b class="t">Degree of Multiprogramming</b> = memory mein ek time par kitne processes hain. Zyada degree = CPU utilization zyada.</div>
+
+<h5>3. Time Sharing (Multitasking) Operating System</h5>
+<p>Multiprogramming ka <b>extension</b>. CPU time ko chhote <b>time slices (quantum)</b> mein baant kar har user/process ko baari-baari se diya jata hai.</p>
+<table>
+<tr><th>Multiprogramming</th><th>Time Sharing</th></tr>
+<tr><td>Goal: CPU utilization maximize</td><td>Goal: response time minimize</td></tr>
+<tr><td>Switch tab hota hai jab process I/O ke liye wait kare</td><td>Switch timer interrupt (time quantum khatam) par hota hai</td></tr>
+<tr><td>Interactive nahi hona zaruri</td><td>Interactive hota hai</td></tr>
+</table>
+
+<h5>4. Parallel (Multiprocessor / Tightly Coupled) Systems</h5>
+<p>Ek hi computer mein <b>do ya zyada CPUs</b> hote hain jo <b>common memory aur bus</b> share karte hain.</p>
+<ul>
+<li><b>Asymmetric Multiprocessing (AMP):</b> ek master CPU baaki slave CPUs ko kaam deta hai.</li>
+<li><b>Symmetric Multiprocessing (SMP):</b> sab CPUs barabar hain, modern systems (Linux, Windows) SMP use karte hain.</li>
+</ul>
+
+<h5>5. Distributed Operating System (Loosely Coupled)</h5>
+<p>Alag-alag computers (nodes) <b>network</b> se jude hote hain. Har ka apna memory aur clock hota hai.</p>
+
+<h5>6. Real-Time Operating System (RTOS)</h5>
+<ul>
+<li><b>Hard Real-Time:</b> deadline miss = system failure (pacemaker, airbag, missile control).</li>
+<li><b>Soft Real-Time:</b> deadline miss = quality drop (video streaming, gaming).</li>
+</ul>
+</section>
+
+<section class="topic" id="u1-structure" data-title="1.2 OS Structure">
+<h3>1.2 Operating System Structure</h3>
+<table>
+<tr><th>Structure</th><th>Idea</th><th>Fayda</th><th>Nuksan</th><th>Example</th></tr>
+<tr><td><b>Monolithic</b></td><td>Poora OS ek bada kernel program</td><td>Fast</td><td>Ek bug se crash</td><td>Linux, MS-DOS</td></tr>
+<tr><td><b>Layered</b></td><td>Layers 0 to N</td><td>Debug aasaan</td><td>Performance kam</td><td>THE OS</td></tr>
+<tr><td><b>Microkernel</b></td><td>Minimum in kernel, baaki user space</td><td>Secure, modular</td><td>Slow</td><td>Mach, QNX</td></tr>
+<tr><td><b>Hybrid</b></td><td>Monolithic + Microkernel</td><td>Balanced</td><td>Complex</td><td>Windows, macOS</td></tr>
+</table>
+</section>
+
+<section class="topic" id="u1-services" data-title="1.3 OS Components aur Services">
+<h3>1.3 Operating System Components aur Services</h3>
+<p>Process Management, Memory Management, File Management, I/O Management, Secondary Storage, Networking, Protection, Shell.</p>
+</section>
+
+<section class="topic" id="u1-syscall" data-title="1.4 System Calls aur Booting">
+<h3>1.4 System Calls, System Programs aur System Boot</h3>
+<div class="def"><b class="t">System Call</b> User mode se kernel mode mein OS ki services maangne ka interface (fork, read, write, open, close, exit).</div>
+<p><b>Boot Process:</b> Power ON → POST → BIOS/UEFI → MBR (Boot Loader / GRUB) → Kernel Load → init (PID 1) → Services → Login Screen.</p>
+</section>
+
+<section class="topic" id="u1-process" data-title="1.5 Process Concept aur Scheduling">
+<h3>1.5 Process Concept aur Process Scheduling</h3>
+<p><b>Process:</b> Program in execution. PCB (Process Control Block) holds: PID, State, PC, Registers, Memory info, Priority.</p>
+<p><b>States:</b> New, Ready, Running, Waiting, Terminated.</p>
+</section>
+
+<section class="topic" id="u1-ipc" data-title="1.6 Cooperating Process aur IPC">
+<h3>1.6 Cooperating Process aur Interprocess Communication (IPC)</h3>
+<p><b>Shared Memory:</b> Fast, direct memory share, synchronization required by programmer.</p>
+<p><b>Message Passing:</b> Kernel managed, send() and receive(), suitable for distributed systems.</p>
+</section>
+
+<section class="topic" id="u1-threads" data-title="1.7 Threads">
+<h3>1.7 Threads (Lightweight Processes)</h3>
+<p>User-Level Threads (ULT) vs Kernel-Level Threads (KLT). Models: Many-to-One, One-to-One, Many-to-Many.</p>
+</section>
+
+<section class="topic" id="u1-cpusched" data-title="1.8 CPU Scheduling">
+<h3>1.8 CPU Scheduling</h3>
+<p><b>Formulas:</b> Turnaround Time (TAT) = Completion Time (CT) − Arrival Time (AT). Waiting Time (WT) = TAT − Burst Time (BT).</p>
+<div class="sim" id="simCPU">
+  <h5>CPU Scheduling Simulator</h5>
+  <div class="row">
+    <label>Algorithm:
+      <select id="cpuAlgo">
+        <option value="fcfs">FCFS</option><option value="sjf">SJF (Non-preemptive)</option>
+        <option value="srtf">SRTF (Preemptive SJF)</option><option value="priority">Priority</option>
+        <option value="rr">Round Robin</option>
+      </select></label>
+    <label>Quantum: <input type="number" id="cpuQ" value="4" min="1"></label>
+  </div>
+  <table id="cpuTable"><thead><tr><th>Process</th><th>Arrival</th><th>Burst</th><th>Priority</th></tr></thead><tbody></tbody></table>
+  <div class="row"><button class="btn" id="cpuAdd">+ Process</button><button class="btn" id="cpuDel">- Process</button><button class="btn primary" id="cpuRun">Run</button></div>
+  <div id="cpuOut"></div>
+</div>
+</section>
+
+<section class="topic" id="u1-qa" data-title="Unit 1: Predicted Questions">
+<h3>Unit 1: Predicted Exam Questions (with Answers)</h3>
+<details class="qa"><summary><span class="m">2M</span>Operating System ko define karo.</summary><div class="ans">OS ek system software hai jo hardware aur user ke beech interface banata hai aur CPU, memory, I/O, files jaise resources ko manage karta hai.</div></details>
+<details class="qa"><summary><span class="m">4M</span>Multiprogramming aur Multitasking (Time-sharing) mein difference batao.</summary><div class="ans">Multiprogramming: memory mein kai jobs, CPU switch tab hota hai jab job I/O mein jaye, goal CPU utilization. Time-sharing: CPU time chhote quantum mein baanta jata hai, timer interrupt se switch, goal fast response time aur interactivity.</div></details>
+<div class="sim quiz" data-quiz="u1"><h5>Unit 1 MCQ Quiz</h5><div class="qbox"></div><button class="btn primary check">Check Answers</button><div class="score"></div></div>
+</section>
+
+<!-- ================= UNIT 2 ================= -->
+<div class="unit-banner" data-unit="Unit 2: Sync, Deadlock &amp; Memory" id="unit2">
+  <h2>Unit 2: Process Synchronization, Deadlocks &amp; Storage Management</h2>
+  <p>Critical section, semaphores, monitors, deadlock, paging, virtual memory, page replacement</p>
+</div>
+
+<section class="topic" id="u2-cs" data-title="2.1 Critical Section Problem">
+<h3>2.1 The Critical-Section Problem</h3>
+<p><b>Race Condition:</b> Result depends on execution order. <b>Solution Requirements:</b> Mutual Exclusion, Progress, Bounded Waiting.</p>
+</section>
+
+<section class="topic" id="u2-sem" data-title="2.2 Semaphores aur Classical Problems">
+<h3>2.2 Semaphores</h3>
+<p>Atomic operations: <code>wait(S)</code> [P] and <code>signal(S)</code> [V]. Counting vs Binary (Mutex).</p>
+</section>
+
+<section class="topic" id="u2-deadlock" data-title="2.4 Deadlock">
+<h3>2.4 Deadlock</h3>
+<p><b>4 Coffman Conditions:</b> Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait.</p>
+<div class="sim" id="simBanker">
+  <h5>Banker's Algorithm Checker</h5>
+  <table id="bankTable"><thead><tr><th>Process</th><th>Allocation</th><th>Max</th></tr></thead><tbody></tbody></table>
+  <div class="row"><label>Available: <input type="text" id="bankAvail" value="3 3 2" style="width:90px"></label><button class="btn primary" id="bankRun">Safe hai ya nahi?</button></div>
+  <div id="bankOut"></div>
+</div>
+</section>
+
+<section class="topic" id="u2-paging" data-title="2.6 Paging aur Segmentation">
+<h3>2.6 Paging aur Segmentation</h3>
+<p><b>Paging:</b> Logical memory into Pages, Physical memory into Frames. No external fragmentation.</p>
+<p><b>Segmentation:</b> Variable sized logical segments (code, stack, data) with base and limit.</p>
+</section>
+
+<section class="topic" id="u2-vm" data-title="2.7 Virtual Memory aur Page Replacement">
+<h3>2.7 Virtual Memory aur Page Replacement</h3>
+<div class="sim" id="simPage">
+  <h5>Page Replacement Simulator</h5>
+  <div class="row">
+    <label>Reference string: <input type="text" id="pgRef" value="7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1" style="width:340px"></label>
+    <label>Frames: <input type="number" id="pgFrames" value="3" min="1" max="8"></label>
+    <label>Algo: <select id="pgAlgo"><option value="fifo">FIFO</option><option value="lru">LRU</option><option value="opt">Optimal</option></select></label>
+    <button class="btn primary" id="pgRun">Run</button>
+  </div>
+  <div id="pgOut" style="overflow-x:auto"></div>
+</div>
+</section>
+
+<!-- ================= UNIT 3 ================= -->
+<div class="unit-banner" data-unit="Unit 3: Linux Basics" id="unit3">
+  <h2>Unit 3: Open Source Software &amp; Linux</h2>
+  <p>Linux intro, architecture, file system, commands, kernel, process, signals, system calls</p>
+</div>
+<section class="topic" id="u3-intro" data-title="3.1 Open Source aur Linux">
+<h3>3.1 Open Source Software aur Linux Introduction</h3>
+<p>Linux Kernel by Linus Torvalds (1991). GPL license. Distros: Ubuntu, Debian, Fedora, RHEL, Arch.</p>
+</section>
+
+<!-- ================= UNIT 4 ================= -->
+<div class="unit-banner" data-unit="Unit 4: Shell Programming" id="unit4">
+  <h2>Unit 4: Shell Programming</h2>
+  <p>Shell, redirection &amp; pipes, vi/emacs, variables, control statements, find, scripts, C programming, filters</p>
+</div>
+<section class="topic" id="u4-shell" data-title="4.1 Shell aur Scripting">
+<h3>4.1 Shell aur Shell Scripting</h3>
+<p>Pipes (|), Redirection (&gt;, &gt;&gt;, &lt;), Filters: grep, sed, awk, sort, uniq, cut, tr, wc.</p>
+</section>
+
+<!-- ================= UNIT 5 ================= -->
+<div class="unit-banner" data-unit="Unit 5: Linux Administration" id="unit5">
+  <h2>Unit 5: Linux System Administration</h2>
+  <p>File listing, ownership &amp; permissions, file types, users, booting &amp; shutdown, init, services</p>
+</div>
+<section class="topic" id="u5-perm" data-title="5.2 Permissions (chmod, chown)">
+<h3>5.2 File Ownership aur Permissions (chmod)</h3>
+<p>User, Group, Others. Read (4), Write (2), Execute (1). Example: 755 (rwxr-xr-x), 644 (rw-r--r--).</p>
+</section>
+
+</main>
+<footer>OS Notes (Hinglish) | RTU Kota &amp; Rajasthan IA Exam Syllabus | Study Notes</footer>
+
+<script>
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+// Theme
+const themeBtn = $('#themeBtn');
+function applyTheme(dark) {
+  document.body.classList.toggle('dark', dark);
+  themeBtn.textContent = dark ? '☀ Light' : '☾ Dark';
+}
+applyTheme(localStorage.getItem('os_theme') === 'dark');
+themeBtn.addEventListener('click', () => {
+  const dark = !document.body.classList.contains('dark');
+  localStorage.setItem('os_theme', dark ? 'dark' : 'light');
+  applyTheme(dark);
+});
+
+// Sidebar
+const sidebar = $('#sidebar');
+const topics = $$('section.topic');
+const links = {};
+(function buildSidebar() {
+  let html = '';
+  $$('.unit-banner, section.topic').forEach(el => {
+    if (el.classList.contains('unit-banner')) {
+      html += '<div class="u">' + el.dataset.unit + '</div>';
+    } else {
+      html += '<a href="#' + el.id + '" data-id="' + el.id + '">' + el.dataset.title + '</a>';
+    }
+  });
+  sidebar.innerHTML = html;
+  $$('a', sidebar).forEach(a => {
+    links[a.dataset.id] = a;
+    a.addEventListener('click', () => sidebar.classList.remove('open'));
+  });
+})();
+$('#menuBtn').addEventListener('click', () => sidebar.classList.toggle('open'));
+
+// CPU Sim
+const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6'];
+function schedule(algo, procs, quantum) {
+  const n = procs.length;
+  const rem = procs.map(p => p.bt);
+  const finished = new Array(n).fill(false);
+  const ct = new Array(n).fill(0);
+  const timeline = [];
+  let t = 0, doneCount = 0;
+  const add = (pid, s, e) => {
+    const last = timeline[timeline.length - 1];
+    if (last && last.pid === pid && last.end === s) last.end = e;
+    else timeline.push({ pid, start: s, end: e });
+  };
+  const ready = () => procs.map((p, i) => i).filter(i => !finished[i] && procs[i].at <= t && rem[i] > 0);
+
+  while (doneCount < n) {
+    let r = ready();
+    if (!r.length) {
+      const next = Math.min(...procs.filter((p, i) => !finished[i]).map(p => p.at));
+      add(null, t, next); t = next; continue;
+    }
+    let pick;
+    if (algo === 'fcfs') pick = r.sort((a, b) => procs[a].at - procs[b].at || a - b)[0];
+    else if (algo === 'sjf') pick = r.sort((a, b) => procs[a].bt - procs[b].bt || procs[a].at - procs[b].at)[0];
+    else if (algo === 'priority') pick = r.sort((a, b) => procs[a].pr - procs[b].pr || procs[a].at - procs[b].at)[0];
+    else if (algo === 'rr') {
+      pick = r[0];
+      const run = Math.min(quantum, rem[pick]);
+      add(pick, t, t + run);
+      t += run; rem[pick] -= run;
+      if (rem[pick] === 0) { finished[pick] = true; ct[pick] = t; doneCount++; }
+      continue;
+    } else {
+      pick = r.sort((a, b) => rem[a] - rem[b] || procs[a].at - procs[b].at)[0];
+      add(pick, t, t + 1);
+      t++; rem[pick]--;
+      if (rem[pick] === 0) { finished[pick] = true; ct[pick] = t; doneCount++; }
+      continue;
+    }
+    add(pick, t, t + rem[pick]);
+    t += rem[pick]; rem[pick] = 0; finished[pick] = true; ct[pick] = t; doneCount++;
+  }
+  return { timeline, ct };
+}
+
+(function setupCpuSim() {
+  const tbody = $('#cpuTable tbody');
+  const defaults = [[0, 6, 2], [1, 8, 1], [2, 7, 3], [3, 3, 2]];
+  defaults.forEach(([at, bt, pr], i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>P${i+1}</td><td><input type="number" value="${at}"></td><td><input type="number" value="${bt}"></td><td><input type="number" value="${pr}"></td>`;
+    tbody.appendChild(tr);
+  });
+  $('#cpuRun').onclick = () => {
+    const procs = $$('tr', tbody).map(tr => {
+      const v = $$('input', tr).map(i => Number(i.value));
+      return { at: v[0], bt: Math.max(1, v[1]), pr: v[2] };
+    });
+    const algo = $('#cpuAlgo').value;
+    const q = Math.max(1, Number($('#cpuQ').value) || 1);
+    const { timeline, ct } = schedule(algo, procs, q);
+    let g = '<div class="gantt">';
+    timeline.forEach((s, idx) => {
+      const w = Math.max(38, (s.end - s.start) * 25);
+      const color = s.pid === null ? '#94a3b8' : COLORS[s.pid % COLORS.length];
+      const name = s.pid === null ? 'Idle' : 'P' + (s.pid + 1);
+      g += `<div class="g" style="width:${w}px;background:${color}">${name}<small>${s.start}</small>${idx === timeline.length - 1 ? `<small class="e">${s.end}</small>` : ''}</div>`;
+    });
+    g += '</div>';
+    let rows = '', sumT = 0, sumW = 0;
+    procs.forEach((p, i) => {
+      const tat = ct[i] - p.at, wt = tat - p.bt;
+      sumT += tat; sumW += wt;
+      rows += `<tr><td>P${i+1}</td><td>${p.at}</td><td>${p.bt}</td><td>${ct[i]}</td><td>${tat}</td><td>${wt}</td></tr>`;
+    });
+    $('#cpuOut').innerHTML = g + `<table><tr><th>Process</th><th>AT</th><th>BT</th><th>CT</th><th>TAT</th><th>WT</th></tr>${rows}</table><b>Avg TAT: ${(sumT/procs.length).toFixed(2)} | Avg WT: ${(sumW/procs.length).toFixed(2)}</b>`;
+  };
+  $('#cpuRun').click();
+})();
+
+// Banker's algorithm
+function bankersSafety(alloc, max, avail) {
+  const n = alloc.length, m = avail.length;
+  const need = alloc.map((a, i) => a.map((x, j) => max[i][j] - x));
+  const work = avail.slice();
+  const finish = new Array(n).fill(false);
+  const seq = [];
+  let progress = true;
+  while (progress) {
+    progress = false;
+    for (let i = 0; i < n; i++) {
+      if (!finish[i] && need[i].every((x, j) => x <= work[j])) {
+        for (let j = 0; j < m; j++) work[j] += alloc[i][j];
+        finish[i] = true; seq.push(i); progress = true;
+      }
+    }
+  }
+  return { safe: finish.every(Boolean), seq };
+}
+(function setupBanker() {
+  const tbody = $('#bankTable tbody');
+  const alloc = ['0 1 0', '2 0 0', '3 0 2', '2 1 1', '0 0 2'];
+  const max = ['7 5 3', '3 2 2', '9 0 2', '2 2 2', '4 3 3'];
+  alloc.forEach((a, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>P${i}</td><td><input type="text" value="${a}"></td><td><input type="text" value="${max[i]}"></td>`;
+    tbody.appendChild(tr);
+  });
+  const parse = s => s.trim().split(/\s+/).map(Number);
+  $('#bankRun').onclick = () => {
+    const rows = $$('tr', tbody);
+    const A = rows.map(r => parse($$('input', r)[0].value));
+    const M = rows.map(r => parse($$('input', r)[1].value));
+    const av = parse($('#bankAvail').value);
+    const r = bankersSafety(A, M, av);
+    $('#bankOut').innerHTML = r.safe ? `<b style="color:#16a34a">SAFE state. Safe sequence: &lt;${r.seq.map(i=>'P'+i).join(', ')}&gt;</b>` : `<b style="color:#ef4444">UNSAFE state (deadlock possible).</b>`;
+  };
+  $('#bankRun').click();
+})();
+
+// Page Replacement
+function pageReplace(algo, refs, nFrames) {
+  const frames = [];
+  const history = [];
+  let faults = 0, ptr = 0;
+  refs.forEach((page, i) => {
+    const hit = frames.includes(page);
+    if (!hit) {
+      faults++;
+      if (frames.length < nFrames) frames.push(page);
+      else {
+        let victim = 0;
+        if (algo === 'fifo') { victim = ptr; ptr = (ptr + 1) % nFrames; }
+        else if (algo === 'lru') {
+          let oldest = Infinity;
+          frames.forEach((f, idx) => {
+            const last = refs.slice(0, i).lastIndexOf(f);
+            if (last < oldest) { oldest = last; victim = idx; }
+          });
+        } else {
+          let farthest = -1;
+          frames.forEach((f, idx) => {
+            const next = refs.indexOf(f, i + 1);
+            const dist = next === -1 ? Infinity : next;
+            if (dist > farthest) { farthest = dist; victim = idx; }
+          });
+        }
+        frames[victim] = page;
+      }
+    }
+    history.push({ page, frames: frames.slice(), hit });
+  });
+  return { history, faults };
+}
+(function setupPageSim() {
+  $('#pgRun').onclick = () => {
+    const refs = $('#pgRef').value.trim().split(/[\s,]+/).map(Number).filter(x => !isNaN(x));
+    const nf = Math.max(1, Math.min(8, Number($('#pgFrames').value) || 3));
+    const algo = $('#pgAlgo').value;
+    const { history, faults } = pageReplace(algo, refs, nf);
+    $('#pgOut').innerHTML = `<b>${algo.toUpperCase()}: Page Faults = ${faults} | Hits = ${refs.length - faults} | Hit Ratio = ${(((refs.length - faults)/refs.length)*100).toFixed(1)}%</b>`;
+  };
+  $('#pgRun').click();
+})();
+</script>
+</body>
+</html>
