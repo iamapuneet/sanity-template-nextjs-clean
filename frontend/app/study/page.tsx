@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Icons } from '@/components/admin/Icons'
 import { CardsGridSkeleton } from '@/app/components/Shimmer'
+import OperatingSystemStudyView from '@/components/study/OperatingSystemStudyView'
 
 interface Subject {
   id: number
@@ -24,39 +25,6 @@ interface Topic {
   tests_count?: number
 }
 
-// Available curated study guide modules
-const STUDY_MODULES: Record<number | string, {
-  title: string
-  subtitle: string
-  fileUrl: string
-  subjectId: number
-  unitsCount: number
-  hasSimulators: boolean
-  hasQuizzes: boolean
-  description: string
-  units: { id: string; name: string; tag: string }[]
-}> = {
-  540: {
-    title: 'Operating System (OS) — Complete Notes',
-    subtitle: '5 Units • Interactive Gantt Schedulers • Banker\'s Deadlock • Page Replacement',
-    fileUrl: '/study/operating-system.html',
-    subjectId: 1,
-    unitsCount: 5,
-    hasSimulators: true,
-    hasQuizzes: true,
-    description: 'Master Operating Systems for Rajasthan Informatics Assistant & RTU Kota syllabus in Hinglish with visual diagrams and simulators.',
-    units: [
-      { id: 'u1', name: 'Unit 1: Overview & Structures', tag: 'Fundamentals' },
-      { id: 'u2', name: 'Unit 2: CPU Scheduling & Deadlocks', tag: 'Core Theory' },
-      { id: 'u3', name: 'Unit 3: Memory & Page Replacement', tag: 'Memory' },
-      { id: 'u4', name: 'Unit 4: Linux & Shell Scripting', tag: 'Linux Basics' },
-      { id: 'u5', name: 'Unit 5: Linux Admin & Automation', tag: 'Admin' },
-      { id: 'sim', name: '⚡ Interactive Simulators', tag: 'Simulators' },
-      { id: 'quiz', name: '📝 Exam Practice Quizzes', tag: 'Quizzes' },
-    ]
-  }
-}
-
 function StudyPortalContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -69,8 +37,6 @@ function StudyPortalContent() {
   const [selectedSubjectId, setSelectedSubjectId] = useState<number>(initialSubject)
   const [selectedTopicId, setSelectedTopicId] = useState<number>(initialTopic)
   const [loading, setLoading] = useState(true)
-  const [fullscreen, setFullscreen] = useState(false)
-  const [activeUnitAnchor, setActiveUnitAnchor] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
 
   // Fetch subjects and topics
@@ -118,13 +84,13 @@ function StudyPortalContent() {
   const currentSubject = subjects.find((s) => s.id === selectedSubjectId)
   const currentTopic = topics.find((t) => t.id === selectedTopicId) || topics.find((t) => t.id === 540)
 
-  const activeModule = useMemo(() => {
-    if (STUDY_MODULES[selectedTopicId]) return STUDY_MODULES[selectedTopicId]
+  const isOperatingSystemModule = useMemo(() => {
+    if (selectedTopicId === 540) return true
     const topicObj = topics.find((t) => t.id === selectedTopicId)
     if (topicObj && (topicObj.parent_id === 540 || topicObj.name.toLowerCase().includes('operating system'))) {
-      return STUDY_MODULES[540]
+      return true
     }
-    return null
+    return false
   }, [selectedTopicId, topics])
 
   const filteredTopics = useMemo(() => {
@@ -145,16 +111,16 @@ function StudyPortalContent() {
               <span>Rajasthan Informatics Assistant Study Center</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Subject Study Notes & Interactive Lab
+              Subject Study Notes &amp; Interactive Lab
             </h1>
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              Master core exam topics with detailed bilingual Hinglish notes, visual architectural diagrams, step-by-step algorithms, live simulators, and practice questions.
+              Master core exam topics with 100% native Next.js notes, live Gantt chart CPU schedulers, Banker's Algorithm safety detectors, and demand page replacement.
             </p>
 
             <div className="flex items-center gap-3 pt-2 flex-wrap">
               <a
                 href="#study-viewer"
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center gap-2 shadow-xs"
               >
                 <span>Read Operating System Notes</span>
                 <span>↓</span>
@@ -295,86 +261,8 @@ function StudyPortalContent() {
 
           {/* Viewer Area (8 cols) */}
           <div className="lg:col-span-8 space-y-4">
-            {activeModule ? (
-              <div className="bg-[#121212] rounded-2xl border border-[#262626] overflow-hidden flex flex-col shadow-xl">
-                {/* Header */}
-                <div className="p-4 sm:p-5 border-b border-[#262626] bg-[#161616] space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-950/70 text-blue-300 border border-blue-800/50">
-                          {currentSubject?.code || 'CIT'}
-                        </span>
-                        <span className="text-[11px] text-[#71717A] font-mono">
-                          {currentSubject?.name}
-                        </span>
-                      </div>
-                      <h2 className="text-base sm:text-lg font-bold text-[#FAFAFA] mt-1">
-                        {activeModule.title}
-                      </h2>
-                      <p className="text-xs text-[#A1A1AA]">{activeModule.subtitle}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setFullscreen(!fullscreen)}
-                        className="px-3 py-1.5 rounded-xl bg-[#222222] hover:bg-[#2C2C2C] text-[#FAFAFA] border border-[#3A3A3A] text-xs font-medium transition-colors"
-                      >
-                        {fullscreen ? 'Collapse' : 'Fullscreen'}
-                      </button>
-                      <a
-                        href={activeModule.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs"
-                      >
-                        <span>Open in New Tab</span>
-                        <span className="text-[11px]">↗</span>
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Unit Navigation Shortcuts */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1">
-                    {activeModule.units.map((unit) => (
-                      <a
-                        key={unit.id}
-                        href={`${activeModule.fileUrl}#${unit.id}`}
-                        target="student_study_frame"
-                        onClick={() => setActiveUnitAnchor(unit.id)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-colors border ${
-                          activeUnitAnchor === unit.id
-                            ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                            : 'bg-[#1C1C1C] text-[#A1A1AA] hover:text-[#FAFAFA] border-[#2C2C2C]'
-                        }`}
-                      >
-                        {unit.name}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Iframe View */}
-                <div className={`w-full bg-[#0B1220] transition-all relative ${fullscreen ? 'fixed inset-0 z-50 p-4 bg-black/95' : 'h-[750px]'}`}>
-                  {fullscreen && (
-                    <button
-                      type="button"
-                      onClick={() => setFullscreen(false)}
-                      className="absolute top-6 right-6 z-50 px-4 py-2 bg-black/80 hover:bg-black text-white rounded-xl text-xs font-bold border border-white/20 shadow-xl"
-                    >
-                      ✕ Close Fullscreen
-                    </button>
-                  )}
-                  <iframe
-                    name="student_study_frame"
-                    id="student_study_frame"
-                    src={activeModule.fileUrl}
-                    title={activeModule.title}
-                    className="w-full h-full border-0 rounded-b-2xl bg-white"
-                  />
-                </div>
-              </div>
+            {isOperatingSystemModule ? (
+              <OperatingSystemStudyView isAdmin={false} />
             ) : (
               <div className="bg-[#121212] rounded-2xl border border-[#262626] p-8 sm:p-12 text-center space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-[#1C1C1C] border border-[#2C2C2C] flex items-center justify-center mx-auto text-[#71717A]">

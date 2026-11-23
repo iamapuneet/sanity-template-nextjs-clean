@@ -319,7 +319,7 @@ export default function CpuSchedulerSimulator() {
             {result.timeline.map((seg, idx) => {
               const width = Math.max(48, (seg.end - seg.start) * 26)
               const isIdle = seg.pid === null
-              const procName = isIdle ? 'Idle' : processes[seg.pid]?.name || 'P'
+              const procName = isIdle ? 'Idle' : (seg.pid !== null && processes[seg.pid]?.name) || 'P'
               const color = isIdle ? '#475569' : COLORS[(seg.pid ?? 0) % COLORS.length]
 
               return (
