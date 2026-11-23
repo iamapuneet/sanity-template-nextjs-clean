@@ -1,0 +1,54 @@
+{
+
+  u1: [
+    { q: 'Kaun sa CPU scheduling algorithm minimum average waiting time deta hai?', o: ['FCFS', 'SJF', 'Round Robin', 'Priority'], a: 1 },
+    { q: 'Ready state ka process Running state mein kis event se jata hai?', o: ['Admitted', 'Dispatch', 'I/O completion', 'Exit'], a: 1 },
+    { q: 'Time-sharing system ka main goal kya hai?', o: ['Throughput maximize', 'Response time minimize', 'Cost kam', 'Batch jobs'], a: 1 },
+    { q: 'Kernel mein sirf minimum functions rakhne wala structure?', o: ['Monolithic', 'Layered', 'Microkernel', 'Simple'], a: 2 },
+    { q: 'Ek process ke threads kya share KARTE hain?', o: ['Stack', 'Registers', 'Code aur data section', 'Program counter'], a: 2 },
+    { q: 'fork() child process ko kya return karta hai?', o: ['Child ka PID', '0', '-1', 'Parent ka PID'], a: 1 },
+    { q: 'Little\'s formula kaun sa hai?', o: ['n = λ × W', 'n = λ + W', 'n = W / λ', 'n = λ − W'], a: 0 },
+    { q: 'Turnaround time = ?', o: ['BT − AT', 'CT − AT', 'CT − BT', 'AT + BT'], a: 1 }
+  ],
+  u2: [
+    { q: 'Banker\'s algorithm kis ke liye hai?', o: ['Deadlock prevention', 'Deadlock avoidance', 'Deadlock detection', 'Recovery'], a: 1 },
+    { q: 'Deadlock ke liye kaun sa condition necessary NAHI hai?', o: ['Mutual exclusion', 'Hold and wait', 'Preemption', 'Circular wait'], a: 2 },
+    { q: 'Belady\'s anomaly kis algorithm mein ho sakta hai?', o: ['LRU', 'Optimal', 'FIFO', 'MRU'], a: 2 },
+    { q: 'Page size 1 KB hai. Logical address 3100 ka offset kya hoga?', o: ['28', '100', '3', '1024'], a: 0 },
+    { q: 'Kis technique mein external fragmentation nahi hoti?', o: ['Paging', 'Segmentation', 'Variable partition', 'Contiguous allocation'], a: 0 },
+    { q: 'Mutual exclusion ke liye mutex semaphore ki initial value?', o: ['0', '1', '-1', 'N'], a: 1 },
+    { q: 'Thrashing mein kya hota hai?', o: ['CPU bahut busy', 'Process execute se zyada paging mein samay lagata hai', 'Disk full', 'Memory leak'], a: 1 },
+    { q: 'Optimal page replacement kaun sa page nikalta hai?', o: ['Sabse purana', 'Sabse kam use hua', 'Jo sabse der tak use nahi hoga', 'Random'], a: 2 }
+  ],
+  u3: [
+    { q: 'Linux kernel kisne banaya?', o: ['Dennis Ritchie', 'Linus Torvalds', 'Richard Stallman', 'Ken Thompson'], a: 1 },
+    { q: 'inode mein kya store hota hai?', o: ['File ka naam', 'File ka data', 'Naam ko chhod kar file ki metadata', 'Directory path'], a: 2 },
+    { q: 'Kaun sa signal catch ya ignore NAHI ho sakta?', o: ['SIGINT', 'SIGTERM', 'SIGKILL', 'SIGALRM'], a: 2 },
+    { q: 'fork() -1 return kare to matlab?', o: ['Success', 'Child process', 'Failure', 'Parent process'], a: 2 },
+    { q: 'File system unmount karne ka command?', o: ['unmount', 'umount', 'demount', 'detach'], a: 1 },
+    { q: 'stderr ka file descriptor?', o: ['0', '1', '2', '3'], a: 2 },
+    { q: 'Device files kis directory mein hoti hain?', o: ['/etc', '/dev', '/bin', '/var'], a: 1 },
+    { q: 'fork(); fork(); ke baad kul kitne processes?', o: ['2', '3', '4', '8'], a: 2 }
+  ],
+  u4: [
+    { q: 'Output ko file mein append karne ka operator?', o: ['>', '>>', '<', '|'], a: 1 },
+    { q: '$? kya hold karta hai?', o: ['Script ka PID', 'Arguments ki sankhya', 'Pichle command ka exit status', 'Script ka naam'], a: 2 },
+    { q: 'Kaun sa loop condition false rehne tak chalta hai?', o: ['while', 'until', 'for', 'case'], a: 1 },
+    { q: 'vi mein save karke quit karne ka command?', o: [':q!', ':w', ':wq', ':x!'], a: 2 },
+    { q: 'Linux ka default shell?', o: ['csh', 'ksh', 'bash', 'zsh'], a: 2 },
+    { q: 'Inmein se kaun sa filter hai?', o: ['cd', 'grep', 'mkdir', 'pwd'], a: 1 },
+    { q: '$# kya deta hai?', o: ['Arguments ki sankhya', 'Saare arguments', 'PID', 'Exit status'], a: 0 },
+    { q: 'Shell script ki pehli line (shebang)?', o: ['#include', '#!/bin/bash', '//bash', '@bash'], a: 1 }
+  ],
+  u5: [
+    { q: 'chmod 644 file se permissions?', o: ['rwxr-xr-x', 'rw-r--r--', 'rw-rw-rw-', 'r--r--r--'], a: 1 },
+    { q: 'init process ka PID?', o: ['0', '1', '2', '100'], a: 1 },
+    { q: 'Reboot ke liye runlevel?', o: ['0', '1', '5', '6'], a: 3 },
+    { q: 'Hashed passwords kahan store hote hain?', o: ['/etc/passwd', '/etc/shadow', '/etc/group', '/home'], a: 1 },
+    { q: 'ls -l mein pehla character "d" ka matlab?', o: ['Device', 'Directory', 'Data', 'Deleted'], a: 1 },
+    { q: 'Aaj ka standard Linux boot loader?', o: ['LILO', 'GRUB', 'NTLDR', 'BOOTMGR'], a: 1 },
+    { q: 'umask 022 par nayi file ki default permission?', o: ['755', '644', '666', '022'], a: 1 },
+    { q: 'Boot order sahi hai?', o: ['Kernel → BIOS → GRUB → init', 'BIOS → GRUB → Kernel → init', 'GRUB → BIOS → init → Kernel', 'init → Kernel → BIOS → GRUB'], a: 1 }
+  ]
+
+}
